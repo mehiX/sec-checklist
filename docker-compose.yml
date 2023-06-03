@@ -1,0 +1,35 @@
+version: '3.4'
+
+services:
+  secchecklist:
+    image: secchecklist
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - CHECKLISTS_DSN=test:test@tcp(db)/test
+    ports:
+      - 8080:80
+
+  db:
+    image: mariadb
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: true
+      MARIADB_USER: test
+      MARIADB_DATABASE: test
+      MARIADB_PASSWORD: test
+    volumes:
+      - ./database/startup:/docker-entrypoint-initdb.d
+      - checklists:/var/lib/mysql
+    ports:
+    - "3306:3306"
+
+  db-admin:
+    image: adminer
+    ports:
+      - 8090:8080
+    depends_on:
+    - db
+
+volumes:
+  checklists:
