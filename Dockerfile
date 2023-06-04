@@ -10,6 +10,9 @@ RUN go build -o /go/bin/app -v ./cmd/api/...
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 COPY --from=builder /go/bin/app /app
-ENTRYPOINT /app
+
+ENTRYPOINT ["/app"]
+CMD ["-db", "-http", "0.0.0.0:80"]
+
 LABEL Name=secchecklist Version=0.0.1
 EXPOSE 80

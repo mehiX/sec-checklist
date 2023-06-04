@@ -26,6 +26,8 @@ func Handlers(svc checks.Service) http.Handler {
 	r.Post("/controls", showFiltered(svc))
 	r.Get("/controls/{id:[0-9.]+}", showOne(svc))
 
+	r.Get("/docs/controls/filter", showFiltered(svc))
+
 	return r
 }
 
@@ -73,8 +75,32 @@ func showFiltered(svc checks.Service) http.HandlerFunc {
 		PersonalSecurityOnly        *bool   `json:"personal_security_only,omitempty"`
 	}
 
+	exampleFilter := func(w http.ResponseWriter) {
+		t := true
+		s := "BSO"
+		json.NewEncoder(w).Encode(struct {
+			Req  filter           `json:"Request body example"`
+			Resp []domain.Control `json:"Response example"`
+		}{Req: filter{
+			OnlyHandleCentrally:         &t,
+			HandledCentrallyBy:          &s,
+			ExcludeForExternalSupplier:  &t,
+			SoftwareDevelopmentRelevant: &t,
+			CloudOnly:                   &t,
+			PhysicalSecurityOnly:        &t,
+			PersonalSecurityOnly:        &t,
+		},
+			Resp: []domain.Control{{}}})
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+
+		if r.Method == http.MethodGet {
+			// show an example of filter
+			exampleFilter(w)
+			return
+		}
 
 		var payload filter
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {

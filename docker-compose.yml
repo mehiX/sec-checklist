@@ -6,10 +6,21 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    command: 
+    - -from 
+    - /data/ISMS1042_VIT_v0.04.xlsx
+    - -fromSheet 
+    - 'ISMS1042 6.2 with all labels' 
+    - -db 
+    - -init 
+    - -http 
+    - 0.0.0.0:80
     environment:
       - CHECKLISTS_DSN=test:test@tcp(db)/test
     ports:
       - 8080:80
+    volumes:
+    - ./data:/data
 
   db:
     image: mariadb
