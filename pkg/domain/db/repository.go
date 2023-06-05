@@ -57,7 +57,7 @@ func (r *repository) FetchByID(ctx context.Context, id string) (domain.Control, 
 }
 
 func (r *repository) SaveAll(ctx context.Context, all []domain.Control) (err error) {
-	qry := "insert into CHECKS (ID, type, name, description) values (?, ?, ?, ?)"
+	qry := "insert into CHECKS (ID, type, name, description,asset_type,last_update,old_id) values (?, ?, ?, ?, ?, ?, ?)"
 	qryCiat := "insert CHECKS_CIAT (CHECK_ID, c, i, a, t) values (?, ?, ?, ?, ?)"
 	qryFilters := `insert FILTERS (CHECK_ID, only_handle_centrally, 
 		handled_centrally_by, excluded_for_external_supplier, 
@@ -105,7 +105,7 @@ func (r *repository) SaveAll(ctx context.Context, all []domain.Control) (err err
 	}
 
 	for _, c := range all {
-		_, err = stmt.ExecContext(context.TODO(), c.ID, c.Type, c.Name, c.Description)
+		_, err = stmt.ExecContext(context.TODO(), c.ID, c.Type, c.Name, c.Description, c.AssetType, c.LastUpdated, c.OldID)
 		if err != nil {
 			return
 		}

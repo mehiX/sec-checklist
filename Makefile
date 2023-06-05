@@ -1,6 +1,13 @@
+EXCEL_FILE=./data/ISMS1042_VIT_v0.04.xlsx
+EXCEL_SHEET='ISMS1042 6.2 with all labels'
+
 .PHONY: db-up
 db-up:
 	docker compose up -d db-admin
+
+.PHONY: db-init
+db-init: down db-up binary
+	./dist/secctrls -from ${EXCEL_FILE} -fromSheet ${EXCEL_SHEET} -db -init
 
 .PHONY: down
 down:
@@ -29,3 +36,7 @@ crossbinary-default:
 .PHONY: test-unit
 test-unit:
 	./script/make.sh test-unit
+
+.PHONY: start
+start: binary
+	./dist/secctrls -db -http 127.0.0.1:8080

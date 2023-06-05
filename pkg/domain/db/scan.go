@@ -8,10 +8,13 @@ type Scanner interface {
 }
 
 func scanForControl[T Scanner](s T) (domain.Control, error) {
-	var id, tp, name, desc, c, i, a, t, handledCentrallyBy string
+	var id, tp, name, desc, assetType, lastUpdate, oldID, c, i, a, t, handledCentrallyBy string
 	var onlyHandleCentrally, excludedForExternalSupplier, softwareDevelopmentRelevant bool
 	var cloudOnly, physicalSecurityOnly, personalSecurityOnly bool
-	finalValues := []any{&id, &tp, &name, &desc, &c, &i, &a, &t,
+	finalValues := []any{
+		&id, &tp, &name, &desc,
+		&assetType, &lastUpdate, &oldID,
+		&c, &i, &a, &t,
 		&onlyHandleCentrally, &handledCentrallyBy, &excludedForExternalSupplier,
 		&softwareDevelopmentRelevant, &cloudOnly,
 		&physicalSecurityOnly, &personalSecurityOnly}
@@ -25,6 +28,9 @@ func scanForControl[T Scanner](s T) (domain.Control, error) {
 		Type:                        tp,
 		Name:                        name,
 		Description:                 desc,
+		AssetType:                   assetType,
+		LastUpdated:                 lastUpdate,
+		OldID:                       oldID,
 		C:                           c,
 		I:                           i,
 		A:                           a,
