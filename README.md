@@ -7,6 +7,15 @@ The security checks needed for auditing are initially provided in an Excel sprea
 Needs: 
 - `docker compose`
 
+Create the environment file (replace the values with the correct ones for your environment):
+
+```shell
+cat > .env <<EOF
+EXCEL_FILEPATH=/data/ISMS1042_VIT_v0.04.xlsx
+SHEET_NAME='ISMS1042 6.2 with all labels'
+EOF
+```
+
 ```shell
 make up
 ```
@@ -79,7 +88,54 @@ curl \
 Get help for the available filters:
 
 ```shell
-curl http://localhost:8080/docs/controls/filter
+curl -s http://localhost:8080/docs/controls/filter | jq '.'
+```
+```json
+{
+  "Request body example": {
+    "only_handle_centrally": true,
+    "handled_centrally_by": "BSO",
+    "exclude_for_external_supplier": true,
+    "software_development_relevant": true,
+    "cloud_only": true,
+    "physical_security_only": true,
+    "personal_security_only": true
+  },
+  "Response example": [
+    {
+      "Type": "",
+      "ID": "",
+      "Name": "",
+      "Description": "",
+      "C": "",
+      "I": "",
+      "A": "",
+      "T": "",
+      "PD": "",
+      "NSI": "",
+      "SESE": "",
+      "OTCL": "",
+      "CSRDirection": "",
+      "SPSA": "",
+      "SPSAUnique": "",
+      "GDPR": false,
+      "GDPRUnique": false,
+      "ExternalSupplier": false,
+      "AssetType": "",
+      "OperationalCapability": "",
+      "PartOfGISR": false,
+      "LastUpdated": "",
+      "OldID": "",
+      "OnlyHandledCentrally": false,
+      "HandledCentrallyBy": "",
+      "ExcludeForExternalSupplier": false,
+      "SoftwareDevelopmentRelevant": false,
+      "CloudOnly": false,
+      "PhysicalSecurityOnly": false,
+      "PersonalSecurityOnly": false
+    }
+  ]
+}
 ```
 
 ## TODO

@@ -8,9 +8,9 @@ services:
       dockerfile: ./Dockerfile
     command: 
     - -from 
-    - /data/ISMS1042_VIT_v0.04.xlsx
+    - ${EXCEL_FILEPATH}
     - -fromSheet 
-    - 'ISMS1042 6.2 with all labels' 
+    - ${SHEET_NAME} 
     - -db 
     - -init 
     - -http 
