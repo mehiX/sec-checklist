@@ -35,7 +35,7 @@ CREATE TABLE CHECKS_OTHERS (
     gdpr boolean DEFAULT FALSE,
     gdpr_unique boolean DEFAULT FALSE,
     external_supplier boolean DEFAULT FALSE,
-    operational_capability varchar(16) NULL DEFAULT '',
+    operational_capability varchar(160) NULL DEFAULT '',
     part_of_gisr boolean DEFAULT FALSE,
     inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT NULL,
@@ -83,6 +83,9 @@ CREATE VIEW V_CHECKS AS
         a.ID, a.type, a.name, a.description, 
         a.asset_type, a.last_update, a.old_id,
         b.c, b.i, b.a, b.t, 
+        o.pd, o.nsi, o.sese, o.otcl, o.csr, o.spsa,
+        o.spsa_unique, o.gdpr, o.gdpr_unique, o.external_supplier,
+        o.operational_capability, o.part_of_gisr,
         f.only_handle_centrally,
         f.handled_centrally_by,
         f.excluded_for_external_supplier,
@@ -92,5 +95,6 @@ CREATE VIEW V_CHECKS AS
         f.personal_security_only
     from CHECKS a 
     inner join CHECKS_CIAT b on a.ID = b.CHECK_ID
-    inner join FILTERS f on a.ID = f.CHECK_ID;
+    inner join FILTERS f on a.ID = f.CHECK_ID
+    inner join CHECKS_OTHERS o on a.ID = o.CHECK_ID;
     

@@ -97,18 +97,19 @@ func fromRowData(row []string) domain.Control {
 	entry.PD = strings.TrimSpace(cols[8])
 	entry.NSI = strings.TrimSpace(cols[9])
 	entry.SESE = strings.TrimSpace(cols[10])
-	entry.OTCI = strings.TrimSpace(cols[11])
+	entry.OTCL = strings.TrimSpace(cols[11])
 	entry.CSRDirection = strings.TrimSpace(cols[12])
 	entry.SPSA = strings.TrimSpace(cols[13])
 	entry.SPSAUnique = strings.TrimSpace(cols[14])
 	entry.GDPR = strings.TrimSpace(cols[15]) == "GDPR"
-	entry.GDPRUnique = strings.TrimSpace(cols[16])
+	entry.GDPRUnique = strings.TrimSpace(cols[16]) == "GDPR unique"
 	entry.ExternalSupplier = strings.TrimSpace(cols[17]) != ""
 	entry.AssetType = strings.TrimSpace(cols[18])
 	entry.OperationalCapability = strings.TrimSpace(cols[19])
 	entry.PartOfGISR = strings.ToLower(strings.TrimSpace(cols[20])) == "yes"
 	entry.LastUpdated = strings.TrimSpace(cols[21])
 	entry.OldID = strings.TrimSpace(cols[22])
+
 	entry.OnlyHandledCentrally = strings.TrimSpace(cols[23]) == "yes"
 	entry.HandledCentrallyBy = strings.TrimSpace(cols[24])
 	entry.ExcludeForExternalSupplier = strings.TrimSpace(cols[25]) == "yes"

@@ -64,6 +64,10 @@ func (r *repository) SaveAll(ctx context.Context, all []domain.Control) (err err
 		software_development_relevant, cloud_only, 
 		physical_security_only, personal_security_only) 
 		values (?, ?, ?, ?, ?, ?, ?, ?)`
+	qryOthers := `insert CHECKS_OTHERS (CHECK_ID, pd, nsi, sese, otcl, 
+		csr, spsa, spsa_unique, gdpr, gdpr_unique, external_supplier,
+		operational_capability, part_of_gisr) 
+		values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	var tx *sql.Tx
 
@@ -104,6 +108,12 @@ func (r *repository) SaveAll(ctx context.Context, all []domain.Control) (err err
 		return
 	}
 
+	var stmtOthers *sql.Stmt
+	stmtOthers, err = tx.PrepareContext(context.TODO(), qryOthers)
+	if err != nil {
+		return
+	}
+
 	for _, c := range all {
 		_, err = stmt.ExecContext(context.TODO(), c.ID, c.Type, c.Name, c.Description, c.AssetType, c.LastUpdated, c.OldID)
 		if err != nil {
@@ -123,6 +133,15 @@ func (r *repository) SaveAll(ctx context.Context, all []domain.Control) (err err
 		if err != nil {
 			return
 		}
+
+		_, err = stmtOthers.ExecContext(
+			context.TODO(), c.ID, c.PD, c.NSI, c.SESE, c.OTCL, c.CSRDirection,
+			c.SPSA, c.SPSAUnique, c.GDPR, c.GDPRUnique, c.ExternalSupplier,
+			c.OperationalCapability, c.PartOfGISR)
+		if err != nil {
+			return
+		}
+
 	}
 
 	return nil

@@ -16,12 +16,12 @@ type Control struct {
 	PD                          string
 	NSI                         string
 	SESE                        string
-	OTCI                        string
+	OTCL                        string
 	CSRDirection                string // CS&R direction for control type
 	SPSA                        string
 	SPSAUnique                  string
 	GDPR                        bool
-	GDPRUnique                  string
+	GDPRUnique                  bool
 	ExternalSupplier            bool //
 	AssetType                   string
 	OperationalCapability       string
