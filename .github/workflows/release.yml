@@ -48,8 +48,8 @@ jobs:
                 GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
               with:
                 upload_url: ${{steps.create_release.outputs.upload_url}}
-                asset_path: ./dist/secctrls_windows-amd64.tar.gz
-                asset_name: secctrls_windows-amd64.tar.gz
+                asset_path: ./dist/secctrls_windows-amd64.exe.tar.gz
+                asset_name: secctrls_windows-amd64.exe.tar.gz
                 asset_content_type: application/gzip
 
             - name: upload darwin (arm64) artifact
