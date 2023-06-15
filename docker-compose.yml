@@ -7,13 +7,10 @@ services:
       context: .
       dockerfile: ./Dockerfile
     command: 
-    - -from 
-    - ${EXCEL_FILEPATH}
-    - -fromSheet 
-    - ${SHEET_NAME} 
-    - -db 
-    - -init 
-    - -http 
+    - api
+    - serve
+    - --db 
+    - --http 
     - 0.0.0.0:80
     environment:
       - CHECKLISTS_DSN=test:test@tcp(db)/test
@@ -21,6 +18,40 @@ services:
       - 8080:80
     volumes:
     - ./data:/data
+
+  client:
+    image: secchecklist
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: 
+    - client
+    - --db 
+    - --http 
+    - 0.0.0.0:80
+    - --api
+    - http://localhost:8080
+    environment:
+      - CHECKLISTS_DSN=test:test@tcp(db)/test
+    ports:
+      - 8081:80
+    volumes:
+    - ./data:/data
+
+  init-db:
+    image: secchecklist
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command:
+    - api
+    - load
+    - --from 
+    - ${EXCEL_FILEPATH}
+    - --fromSheet 
+    - ${SHEET_NAME} 
+    depends_on:
+      - db
 
   db:
     image: mariadb

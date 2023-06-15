@@ -1,0 +1,126 @@
+{{ define "index"}}
+{{ template "head" }}
+</head>
+
+<body>
+    <div class="ui container">
+        <h1 class="ui header">Application properties</h1>
+        <form class="ui form">
+            <div class="ui vertical segment">
+                <h4 class="ui header">General or specific  controls for specific roles (handled centraly only, not for system/data owners)?</h4>
+                <div class="field">
+                    <div class="ui toggle checkbox">
+                        <input type="checkbox" name="centralOnly" id="centralOnly" tabindex="0" class="hidden">
+                    </div>
+                </div>
+            </div>
+            <div class="ui vertical segment">
+                <div class="field">
+                    Owner of central controls is
+                    <div class="ui inline scrolling dropdown">
+                        <input type="hidden" name="ownerCentralOnly" id="ownerCentralOnly" value="IT SPO">
+                        <div class="text">IT SPO</div>
+                        <i class="dropdown icon"></i>
+                        <div class="menu">
+                            <div class="item" data-value="IT SPO">IT SPO</div>
+                            <div class="item" data-value="IT BISO">IT BISO</div>
+                            <div class="item" data-value="IT BCO">IT BCO</div>
+                            <div class="item" data-value="IT Managers">IT Managers</div>
+                            <div class="item" data-value="IT Asset Manager">IT Asset Manager</div>
+                            <div class="item" data-value="CAR CA45">CAR CA45</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui vertical segment">
+                <h4 class="ui header">Exclude controls for only external supplier?</h4>
+                <div class="field">
+                    <div class="ui toggle checkbox">
+                        <input type="checkbox" name="onlyExternalSupplier" id="onlyExternalSupplier" tabindex="0" class="hidden">
+                    </div>
+                </div>
+            </div>
+            <div class="ui vertical segment">
+                <h4 class="ui header">Software development relevant?</h4>
+                <div class="field">
+                    <div class="ui toggle checkbox">
+                        <input type="checkbox" name="softwareDev" id="softwareDev" tabindex="0" class="hidden">
+                    </div>
+                </div>
+            </div>
+            <div class="ui vertical segment">
+                <h4 class="ui header">Cloud only?</h4>
+                <div class="field">
+                    <div class="ui toggle checkbox">
+                        <input type="checkbox" name="cloudOnly" id="cloudOnly" tabindex="0" class="hidden">
+                    </div>
+                </div>
+            </div>
+            <div class="ui vertical segment">
+                <h4 class="ui header">Physical security only?</h4>
+                <div class="field">
+                    <div class="ui toggle checkbox">
+                        <input type="checkbox" name="physicalSecOnly" id="physicalSecOnly" tabindex="0" class="hidden">
+                    </div>
+                </div>
+            </div>
+            <div class="ui vertical segment">
+                <h4 class="ui header">Personal security only?</h4>
+                <div class="field">
+                    <div class="ui toggle checkbox">
+                        <input type="checkbox" name="persSecOnly" id="persSecOnly" tabindex="0" class="hidden">
+                    </div>
+                </div>
+            </div>
+            <div class="ui vertical segment">
+                <div class="ui filter button" tabindex="0">Filter controls</div>
+            </div>
+        </form>
+        <div class="ui segment" id="results">
+    </div>
+    </div>
+</body>
+<script>
+$('.ui.inline.dropdown')
+  .dropdown({
+    clearable: true
+    })
+;
+$('.ui.checkbox')
+  .checkbox()
+;
+
+$('.ui.filter.button').on('click', function(event) {
+    event.preventDefault();
+
+    var data = {
+      only_handle_centrally: true,
+      handled_centrally_by: $("#ownerCentralOnly").val(),
+      exclude_for_external_supplier: false,
+      software_development_relevant: false,
+      cloud_only: false,
+      physical_security_only: false,
+      personal_security_only: false
+    };
+
+    var posting = $.post({
+        url: '//127.0.0.1:8080/controls/', 
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify(data)
+    })
+    
+    posting.done(function(data) {
+        $('#results').empty();
+        $.each(data, function(index, element) {
+            $('#results').append($('<div>', {
+                text: element.ID + "-" + element.Name
+            }));
+        });
+        console.log(data);
+    });
+});
+
+</script>
+</html>
+{{ end }}

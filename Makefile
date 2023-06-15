@@ -7,7 +7,7 @@ db-up:
 
 .PHONY: db-init
 db-init: down db-up binary
-	./dist/secctrls -from ${EXCEL_FILE} -fromSheet ${EXCEL_SHEET} -db -init
+	./dist/secctrls api load --from ${EXCEL_FILE} --fromSheet ${EXCEL_SHEET}
 
 .PHONY: down
 down:
@@ -15,7 +15,7 @@ down:
 
 .PHONY: up
 up: db-up
-	docker compose up -d --build secchecklist
+	docker compose up -d --build secchecklist client
 
 dist:
 	mkdir -p dist
@@ -37,6 +37,10 @@ crossbinary-default:
 test-unit:
 	./script/make.sh test-unit
 
-.PHONY: start
-start: binary
-	./dist/secctrls -db -http 127.0.0.1:8080
+.PHONY: start-api
+start-api: binary
+	./dist/secctrls api serve --db --http 127.0.0.1:8080
+
+.PHONY: start-client
+start-client: binary
+	./dist/secctrls client --api http://localhost:8080 --http 127.0.0.1:8081

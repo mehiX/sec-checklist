@@ -21,4 +21,4 @@ echo "Building ${BASE_BIN} for ${GOOS}/${GOARCH}"
 GO_BUILD_CMD="go build -ldflags"
 GO_BUILD_ARGS="-s -w"
 
-CGO_ENABLED=0 ${GO_BUILD_CMD} "${GO_BUILD_ARGS}" ${FLAGS} -o "${BASE_BIN}" ./cmd/api/...
+CGO_ENABLED=0 ${GO_BUILD_CMD} "${GO_BUILD_ARGS}" ${FLAGS} -o "${BASE_BIN}" ./main.go
