@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/mehix/sec-checklist/pkg/iFacts"
 	"github.com/mehix/sec-checklist/pkg/server"
 	"github.com/mehix/sec-checklist/pkg/service/checks"
 	"github.com/spf13/cobra"
@@ -61,13 +62,14 @@ func Command() *cobra.Command {
 
 func serve() {
 	svc := checks.NewService()
+	iFactsClient := &iFacts.Client{}
 
 	if db {
 		checks.WithDb(os.Getenv("CHECKLISTS_DSN"))(svc)
 	}
 
 	fmt.Println("Listening on", addr)
-	if err := http.ListenAndServe(addr, server.Handlers(svc)); err != nil && err != http.ErrServerClosed {
+	if err := http.ListenAndServe(addr, server.Handlers(svc, iFactsClient)); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 

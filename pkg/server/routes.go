@@ -10,10 +10,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/mehix/sec-checklist/pkg/domain"
+	"github.com/mehix/sec-checklist/pkg/iFacts"
 	"github.com/mehix/sec-checklist/pkg/service/checks"
 )
 
-func Handlers(svc checks.Service) http.Handler {
+func Handlers(svc checks.Service, iFactsClient *iFacts.Client) http.Handler {
 	r := chi.NewMux()
 
 	r.Use(middleware.Logger)
@@ -38,6 +39,9 @@ func Handlers(svc checks.Service) http.Handler {
 	r.Get("/controls/", showAll(svc))
 	r.Post("/controls/", showFiltered(svc))
 	r.Get("/controls/{id:[0-9.]+}", showOne(svc))
+
+	r.Post("/ifacts/config", configIFactsClient(iFactsClient))
+	r.Method(http.MethodGet, "/ifacts/*", http.StripPrefix("/ifacts", http.HandlerFunc(forwardGetToIFacts(iFactsClient))))
 
 	r.Get("/docs/controls/filter", showFiltered(svc))
 

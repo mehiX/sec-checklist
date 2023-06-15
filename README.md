@@ -52,14 +52,14 @@ Load initial data for the Excel spreadsheet:
 ```shell
 # on Windows use ./dist/secctrls.exe
 
-./dist/secctrls -from <excel_file_path> -fromSheet <sheet_name> -db -init
+./dist/secctrls api load --from <excel_file_path> --fromSheet <sheet_name>
 ```
 
 Start the webserver:
 
 ```shell
 # on Windows use ./dist/secctrls.exe
-./dist/secctrls -db -http 127.0.0.1:8080
+./dist/secctrls api serve --http 127.0.0.1:8080 --db
 ```
 
 ## Endpoints
