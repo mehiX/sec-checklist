@@ -8,15 +8,16 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/mehix/sec-checklist/pkg/domain"
+	"github.com/mehix/sec-checklist/pkg/domain/check"
+	"github.com/mehix/sec-checklist/pkg/domain/db"
 )
 
 type repository struct {
 	db *sql.DB
 }
 
-func NewRepository(dsn string) domain.ReaderWriter {
-	db, err := DbConnWithRetry(dbConn, 5, time.Second, time.Minute)(context.Background(), dsn)
+func NewRepository(dsn string) check.ReaderWriter {
+	db, err := db.ConnWithRetry(db.Conn, 5, time.Second, time.Minute)(context.Background(), dsn)
 	if err != nil {
 		log.Fatalln("DB connection failed", err)
 	}
@@ -25,7 +26,7 @@ func NewRepository(dsn string) domain.ReaderWriter {
 	return &repository{db: db}
 }
 
-func (r *repository) FetchAll() ([]domain.Control, error) {
+func (r *repository) FetchAll() ([]check.Control, error) {
 	qry := "select * from V_CHECKS"
 
 	rows, err := r.db.QueryContext(context.TODO(), qry)
@@ -34,7 +35,7 @@ func (r *repository) FetchAll() ([]domain.Control, error) {
 	}
 	defer rows.Close()
 
-	var ctrls []domain.Control
+	var ctrls []check.Control
 	for rows.Next() {
 		ctrl, err := scanForControl(rows)
 		if err != nil {
@@ -47,16 +48,16 @@ func (r *repository) FetchAll() ([]domain.Control, error) {
 	return ctrls, nil
 
 }
-func (r *repository) FetchByType(t string) ([]domain.Control, error) { return nil, nil }
+func (r *repository) FetchByType(t string) ([]check.Control, error) { return nil, nil }
 
-func (r *repository) FetchByID(ctx context.Context, id string) (domain.Control, error) {
+func (r *repository) FetchByID(ctx context.Context, id string) (check.Control, error) {
 	qry := "select * from V_CHECKS where ID = ?"
 
 	row := r.db.QueryRowContext(ctx, qry, id)
 	return scanForControl(row)
 }
 
-func (r *repository) SaveAll(ctx context.Context, all []domain.Control) (err error) {
+func (r *repository) SaveAll(ctx context.Context, all []check.Control) (err error) {
 	qry := "insert into CHECKS (ID, type, name, description,asset_type,last_update,old_id) values (?, ?, ?, ?, ?, ?, ?)"
 	qryCiat := "insert CHECKS_CIAT (CHECK_ID, c, i, a, t) values (?, ?, ?, ?, ?)"
 	qryFilters := `insert FILTERS (CHECK_ID, only_handle_centrally, 

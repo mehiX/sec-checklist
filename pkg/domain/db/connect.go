@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func dbConn(ctx context.Context, dsn string) (*sql.DB, error) {
+func Conn(ctx context.Context, dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		panic(err)
@@ -28,7 +28,7 @@ func dbConn(ctx context.Context, dsn string) (*sql.DB, error) {
 
 type dbConnFn func(ctx context.Context, dsn string) (*sql.DB, error)
 
-func DbConnWithRetry(f dbConnFn, retries int, base, cap time.Duration) dbConnFn {
+func ConnWithRetry(f dbConnFn, retries int, base, cap time.Duration) dbConnFn {
 	backoff := base
 
 	return func(ctx context.Context, dsn string) (*sql.DB, error) {

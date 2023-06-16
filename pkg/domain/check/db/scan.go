@@ -1,13 +1,13 @@
 package db
 
-import "github.com/mehix/sec-checklist/pkg/domain"
+import "github.com/mehix/sec-checklist/pkg/domain/check"
 
 // Scanner used as constraint for `scanForControl`
 type Scanner interface {
 	Scan(...any) error
 }
 
-func scanForControl[T Scanner](s T) (domain.Control, error) {
+func scanForControl[T Scanner](s T) (check.Control, error) {
 	var id, tp, name, desc, assetType, lastUpdate, oldID, c, i, a, t, handledCentrallyBy string
 	var pd, nsi, sese, otcl, csr, spsa, spsaUnique, operationalCapability string
 	var gdpr, gdprUnique, externalSupplier, partOfGisr bool
@@ -24,10 +24,10 @@ func scanForControl[T Scanner](s T) (domain.Control, error) {
 		&physicalSecurityOnly, &personalSecurityOnly}
 
 	if err := s.Scan(finalValues...); err != nil {
-		return domain.Control{}, err
+		return check.Control{}, err
 	}
 
-	return domain.Control{
+	return check.Control{
 		ID:                          id,
 		Type:                        tp,
 		Name:                        name,

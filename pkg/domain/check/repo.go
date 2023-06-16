@@ -1,4 +1,4 @@
-package domain
+package check
 
 import "context"
 

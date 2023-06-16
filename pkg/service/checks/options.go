@@ -1,8 +1,8 @@
 package checks
 
 import (
-	"github.com/mehix/sec-checklist/pkg/domain/db"
-	"github.com/mehix/sec-checklist/pkg/domain/xls"
+	"github.com/mehix/sec-checklist/pkg/domain/check/db"
+	"github.com/mehix/sec-checklist/pkg/domain/check/xls"
 )
 
 type Option func(Service)

@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/mehix/sec-checklist/pkg/domain"
+	"github.com/mehix/sec-checklist/pkg/domain/check"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
 	"github.com/mehix/sec-checklist/pkg/service/checks"
 )
@@ -35,6 +35,10 @@ func Handlers(svc checks.Service, iFactsClient *iFacts.Client) http.Handler {
 	}))
 
 	//r.Use(middleware.RedirectSlashes)
+
+	//r.Get("/apps/", listAllApps(svc))
+	//r.Post("/apps", saveApp(svc))
+	//r.Get("/apps/{id:[0-9]+}", showAppByID(svc))
 
 	r.Get("/controls/", showAll(svc))
 	r.Post("/controls/", showFiltered(svc))
@@ -96,8 +100,8 @@ func showFiltered(svc checks.Service) http.HandlerFunc {
 		t := true
 		s := "BSO"
 		json.NewEncoder(w).Encode(struct {
-			Req  filter           `json:"Request body example"`
-			Resp []domain.Control `json:"Response example"`
+			Req  filter          `json:"Request body example"`
+			Resp []check.Control `json:"Response example"`
 		}{Req: filter{
 			OnlyHandleCentrally:         &t,
 			HandledCentrallyBy:          &s,
@@ -107,7 +111,7 @@ func showFiltered(svc checks.Service) http.HandlerFunc {
 			PhysicalSecurityOnly:        &t,
 			PersonalSecurityOnly:        &t,
 		},
-			Resp: []domain.Control{{}}})
+			Resp: []check.Control{{}}})
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -131,7 +135,7 @@ func showFiltered(svc checks.Service) http.HandlerFunc {
 			handleError(w, err)
 			return
 		}
-		var filtered []domain.Control
+		var filtered []check.Control
 		for _, c := range all {
 			if payload.OnlyHandleCentrally != nil && *payload.OnlyHandleCentrally != c.OnlyHandledCentrally {
 				continue

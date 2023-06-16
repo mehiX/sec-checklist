@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mehix/sec-checklist/pkg/domain"
+	"github.com/mehix/sec-checklist/pkg/domain/check"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -14,21 +14,21 @@ type repository struct {
 	sheetName string
 }
 
-func NewRepository(fPath, sheetName string) domain.Reader {
+func NewRepository(fPath, sheetName string) check.Reader {
 	return &repository{fPath: fPath, sheetName: sheetName}
 }
 
-func (r *repository) FetchByID(_ context.Context, id string) (domain.Control, error) {
-	return domain.Control{}, fmt.Errorf("not implemented")
+func (r *repository) FetchByID(_ context.Context, id string) (check.Control, error) {
+	return check.Control{}, fmt.Errorf("not implemented")
 }
 
-func (r *repository) FetchByType(t string) ([]domain.Control, error) {
+func (r *repository) FetchByType(t string) ([]check.Control, error) {
 	all, err := r.FetchAll()
 	if err != nil {
 		return nil, err
 	}
 
-	var byType []domain.Control
+	var byType []check.Control
 	for _, c := range all {
 		if c.Type == t {
 			byType = append(byType, c)
@@ -38,7 +38,7 @@ func (r *repository) FetchByType(t string) ([]domain.Control, error) {
 	return byType, nil
 }
 
-func (r *repository) FetchAll() ([]domain.Control, error) {
+func (r *repository) FetchAll() ([]check.Control, error) {
 	f, err := excelize.OpenFile(r.fPath)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (r *repository) FetchAll() ([]domain.Control, error) {
 	}
 
 	counter := 0
-	controls := make([]domain.Control, 0)
+	controls := make([]check.Control, 0)
 	for rows.Next() {
 		if counter == 0 {
 			//header row
@@ -78,12 +78,12 @@ func (r *repository) FetchAll() ([]domain.Control, error) {
 	return controls, nil
 }
 
-func fromRowData(row []string) domain.Control {
+func fromRowData(row []string) check.Control {
 	// some rows may have less columns filled with data
 	cols := make([]string, 30)
 	copy(cols, row)
 
-	entry := domain.Control{
+	entry := check.Control{
 		Type: strings.TrimSpace(cols[0]),
 		ID:   strings.TrimSpace(cols[1]),
 		Name: strings.TrimSpace(cols[2]),
