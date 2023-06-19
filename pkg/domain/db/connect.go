@@ -11,7 +11,7 @@ import (
 func Conn(ctx context.Context, dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// See "Important settings" section.
