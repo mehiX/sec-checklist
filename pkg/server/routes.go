@@ -41,6 +41,7 @@ func Handlers(svc checks.Service, svcApps application.Service, iFactsClient *iFa
 	r.Post("/apps", saveApp(svcApps))
 	r.Get("/apps/{id:[0-9]+}", showAppByID(svcApps))
 	r.Put("/apps/{id:[0-9]+}", updateApp(svcApps))
+	r.Get("/apps/search/remote", searchAppByNameRemote(iFactsClient))
 
 	r.Get("/controls/", showAll(svc))
 	r.Post("/controls/", showFiltered(svc))

@@ -1,6 +1,8 @@
 package iFacts
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,5 +30,24 @@ func (c *Client) Request(method, endPoint string, body io.Reader, f func(*http.R
 	}
 	defer resp.Body.Close()
 
-	return f(resp)
+	// it's cleaner this way, since we should wait for f to return and then close the body
+	err = f(resp)
+
+	return err
+}
+
+func (c *Client) SearchByName(name string, f func(*http.Response) error) error {
+
+	type bodyT struct {
+		AssetName string `json:"assetName"`
+	}
+
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(bodyT{
+		AssetName: name,
+	}); err != nil {
+		return err
+	}
+
+	return c.Request(http.MethodPost, "/api/v1/assets/search", &body, f)
 }

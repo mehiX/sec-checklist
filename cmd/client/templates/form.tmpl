@@ -4,15 +4,15 @@
     <div class="ui vertical segment">
         <div class="fields">
             <div class="four wide field">
-                <label>ID</label>
+                <label>Name</label>
                 <div class="ui icon input">
-                    <input type="text" name="appID" id="appID" placeholder="application ID">
-                    <i class="search link icon" id="qryIFacts"></i>
+                    <input type="text" name="appName" id="appName" placeholder="application name">
+                    <i class="search link icon" id="qryAppByName"></i>
                 </div>
             </div>
             <div class="twelve wide field">
-                <label>Name</label>
-                <input type="text" name="appName" id="appName" placeholder="application name">
+                <label>ID</label>
+                <input type="text" name="appID" id="appID" placeholder="application id">
             </div>
         </div>
     </div>
@@ -87,31 +87,34 @@
     </div>
 </form>
 <script>
-$("#qryIFacts").on("click", function (event) {
+$("#qryAppByName").on("click", function (event) {
     event.preventDefault();
 
-    appID = $("#appID").val();
-    if (appID == "") {
-        alert("Need an application ID");
+    appName = $("#appName").val();
+    if (appName == "") {
+        alert("Need an application name");
         return;
     }
     
-    $("#appID").parent().toggleClass("loading");
-    $("#qryIFacts").toggleClass("link");
+    $("#appName").parent().toggleClass("loading");
+    $("#qryAppByName").toggleClass("link");
     console.log("calling iFacts");
 
     var fromIFacts = $.get({
-        url:'//127.0.0.1:8080/ifacts/app/'+appID,
+        url:'//127.0.0.1:8080/apps/search/remote',
         contentType: 'application/json',
         dataType: 'json',
+        data: {
+            q: appName
+        },
         complete: function() {
-            $("#appID").parent().toggleClass("loading");
-            $("#qryIFacts").toggleClass("link");
+            $("#appName").parent().toggleClass("loading");
+            $("#qryAppByName").toggleClass("link");
         }
     });
 
     fromIFacts.done(function(data) {
-        console.log("response from iFacts");
+        console.log("response from iFacts", data);
     });
 
 });
