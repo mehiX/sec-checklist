@@ -23,6 +23,8 @@ func (c *Client) Request(method, endPoint string, body io.Reader, f func(*http.R
 		return err
 	}
 	req.Header.Set("Cookie", c.CookieToken)
+	req.Header.Set("Content-type", "application/json-patch+json")
+	req.Header.Set("Accept", "text/plain")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
