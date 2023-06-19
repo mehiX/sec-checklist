@@ -1,0 +1,57 @@
+{{ define "config" }}
+{{ template "head" }}
+<style>
+.ui.container {
+    margin-top: 40px;
+}
+</style>
+</head>
+<body>
+    <div class="ui container">
+        <form class="ui form">
+            <h4 class="ui dividing header">iFacts config</h4>
+            <div class="field">
+                <label>Token</lable>
+                <textarea rows="3" id="cookie"></textarea>
+            </div>
+            <div class="field">
+                <label>Base URL</label>
+                <input type="text" id="baseURL">
+            </div>
+            <button class="ui fluid button">Save</button>
+        </form>
+
+        <div class="ui message">
+            <p>The initial data does not reflect the current state of the Config. This form is only used to override existing data (whatever that is).</p>
+        </div>
+    </div>
+    <script>
+    $(".ui.button").on("click", function(ev) {
+        ev.preventDefault();
+
+        data = {
+            cookie_token: $("#cookie").val(),
+            base_url: $("#baseURL").val()
+        };
+
+        var posting = $.post({
+            url: '//127.0.0.1:8080/ifacts/config',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            statusCode: {
+                201: function() {
+                    alert('Configuration saved');
+                }
+            },
+            fail: function() {
+                alert('Configuration not saved!');
+            }
+        });
+
+        return false;
+    });
+    </script>
+</body>
+</html>
+{{ end }}

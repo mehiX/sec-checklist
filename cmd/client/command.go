@@ -46,6 +46,8 @@ func serve() {
 	http.HandleFunc("/apps/new", showTemplate(tmpl, "filters"))
 	http.HandleFunc("/apps/filters", showTemplate(tmpl, "filters"))
 
+	http.HandleFunc("/config", showTemplate(tmpl, "config"))
+
 	fmt.Printf("Listening on %s\n", addr)
 
 	if err := http.ListenAndServe(addr, nil); err != nil && err != http.ErrServerClosed {

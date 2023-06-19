@@ -2,6 +2,15 @@
 
 <form class="ui form">
     <div class="ui vertical segment">
+        <div class="field">
+            <div class="ui search">
+                <div class="ui icon input">
+                    <input class="prompt" type="text" placeholder="application name">
+                    <i class="search icon"></i>
+                </div>
+                <div class="results"></div>
+            </div>
+        </div>
         <div class="fields">
             <div class="four wide field">
                 <label>Name</label>
@@ -87,6 +96,20 @@
     </div>
 </form>
 <script>
+$(".ui.search")
+    .search({
+    apiSettings: {
+      url: '//127.0.0.1:8080/apps/search/remote?q={query}'
+    },
+    fields: {
+      results : 'Assets',
+      title   : 'MetaData.AssetApplicationMetadata.ApplicationName',
+      price   : 'MetaData.AssetApplicationMetadata.ApplicationId'
+    },
+    minCharacters : 3
+  })
+;
+
 $("#qryAppByName").on("click", function (event) {
     event.preventDefault();
 
