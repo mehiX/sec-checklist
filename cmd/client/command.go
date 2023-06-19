@@ -38,7 +38,13 @@ func serve() {
 		log.Fatal(err)
 	}
 
-	http.HandleFunc("/", handleIndex(tmpl))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Location", "/apps")
+		w.WriteHeader(http.StatusFound)
+	})
+	http.HandleFunc("/apps/", showTemplate(tmpl, "apps"))
+	http.HandleFunc("/apps/new", showTemplate(tmpl, "filters"))
+	http.HandleFunc("/apps/filters", showTemplate(tmpl, "filters"))
 
 	fmt.Printf("Listening on %s\n", addr)
 
@@ -48,10 +54,10 @@ func serve() {
 
 }
 
-func handleIndex(t *template.Template) http.HandlerFunc {
+func showTemplate(t *template.Template, name string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "text/html")
-		if err := t.ExecuteTemplate(w, "index", nil); err != nil {
+		if err := t.ExecuteTemplate(w, name, nil); err != nil {
 			log.Printf("Executing template index: %v\n", err.Error())
 			w.Write([]byte(err.Error()))
 			return

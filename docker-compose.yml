@@ -9,7 +9,6 @@ services:
     command: 
     - api
     - serve
-    - --db 
     - --http 
     - 0.0.0.0:80
     environment:
@@ -26,7 +25,6 @@ services:
       dockerfile: ./Dockerfile
     command: 
     - client
-    - --db 
     - --http 
     - 0.0.0.0:80
     - --api

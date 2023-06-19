@@ -59,7 +59,7 @@ Start the webserver:
 
 ```shell
 # on Windows use ./dist/secctrls.exe
-./dist/secctrls api serve --http 127.0.0.1:8080 --db
+./dist/secctrls api serve --http 127.0.0.1:8080
 ```
 
 ## Endpoints

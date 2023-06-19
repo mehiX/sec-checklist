@@ -3,12 +3,13 @@ package application
 import "context"
 
 type Reader interface {
-	FetchAppByID(context.Context, string) (*Application, error)
-	ListAllApps(context.Context) ([]Application, error)
+	FetchByID(context.Context, string) (*Application, error)
+	ListAll(context.Context) ([]Application, error)
 }
 
 type Writer interface {
-	SaveApp(context.Context, *Application) error
+	Save(context.Context, *Application) error
+	Update(context.Context, *Application) error
 }
 
 type ReaderWriter interface {

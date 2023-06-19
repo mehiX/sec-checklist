@@ -10,13 +10,13 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
 	"github.com/mehix/sec-checklist/pkg/server"
+	"github.com/mehix/sec-checklist/pkg/service/application"
 	"github.com/mehix/sec-checklist/pkg/service/checks"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
 )
 
 var addr string
-var db bool
 
 var fromExcel, fromSheet string
 
@@ -41,7 +41,6 @@ func Command() *cobra.Command {
 	}
 
 	cmdServe.Flags().StringVar(&addr, "http", "127.0.0.1:8080", "HTTP address to listen on")
-	cmdServe.Flags().BoolVar(&db, "db", false, "Connect to database")
 
 	cmdLoad := &cobra.Command{
 		Use:   "load",
@@ -61,15 +60,16 @@ func Command() *cobra.Command {
 }
 
 func serve() {
-	svc := checks.NewService()
+	svc := checks.NewService(
+		checks.WithDb(os.Getenv("CHECKLISTS_DSN")),
+	)
+	svcApps := application.NewService(
+		application.WithDb(os.Getenv("CHECKLISTS_DSN")),
+	)
 	iFactsClient := &iFacts.Client{}
 
-	if db {
-		checks.WithDb(os.Getenv("CHECKLISTS_DSN"))(svc)
-	}
-
 	fmt.Println("Listening on", addr)
-	if err := http.ListenAndServe(addr, server.Handlers(svc, iFactsClient)); err != nil && err != http.ErrServerClosed {
+	if err := http.ListenAndServe(addr, server.Handlers(svc, svcApps, iFactsClient)); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 

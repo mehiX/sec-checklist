@@ -39,7 +39,7 @@ test-unit:
 
 .PHONY: start-api
 start-api: binary
-	./dist/secctrls api serve --db --http 127.0.0.1:8080
+	./dist/secctrls api serve --http 127.0.0.1:8080
 
 .PHONY: start-client
 start-client: binary

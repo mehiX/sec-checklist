@@ -11,10 +11,11 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/mehix/sec-checklist/pkg/domain/check"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
+	"github.com/mehix/sec-checklist/pkg/service/application"
 	"github.com/mehix/sec-checklist/pkg/service/checks"
 )
 
-func Handlers(svc checks.Service, iFactsClient *iFacts.Client) http.Handler {
+func Handlers(svc checks.Service, svcApps application.Service, iFactsClient *iFacts.Client) http.Handler {
 	r := chi.NewMux()
 
 	r.Use(middleware.Logger)
@@ -36,9 +37,10 @@ func Handlers(svc checks.Service, iFactsClient *iFacts.Client) http.Handler {
 
 	//r.Use(middleware.RedirectSlashes)
 
-	//r.Get("/apps/", listAllApps(svc))
-	//r.Post("/apps", saveApp(svc))
-	//r.Get("/apps/{id:[0-9]+}", showAppByID(svc))
+	r.Get("/apps/", listAllApps(svcApps))
+	r.Post("/apps", saveApp(svcApps))
+	r.Get("/apps/{id:[0-9]+}", showAppByID(svcApps))
+	r.Put("/apps/{id:[0-9]+}", updateApp(svcApps))
 
 	r.Get("/controls/", showAll(svc))
 	r.Post("/controls/", showFiltered(svc))
