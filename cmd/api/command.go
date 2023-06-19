@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/joho/godotenv"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
@@ -16,7 +17,10 @@ import (
 	"golang.org/x/net/context"
 )
 
-var addr string
+var (
+	addr string
+	noDb bool
+)
 
 var fromExcel, fromSheet string
 
@@ -41,6 +45,7 @@ func Command() *cobra.Command {
 	}
 
 	cmdServe.Flags().StringVar(&addr, "http", "127.0.0.1:8080", "HTTP address to listen on")
+	cmdServe.Flags().BoolVar(&noDb, "no-db", false, "do not try to connect to DB")
 
 	cmdLoad := &cobra.Command{
 		Use:   "load",
@@ -60,12 +65,34 @@ func Command() *cobra.Command {
 }
 
 func serve() {
-	svc := checks.NewService(
-		checks.WithDb(os.Getenv("CHECKLISTS_DSN")),
-	)
-	svcApps := application.NewService(
-		application.WithDb(os.Getenv("CHECKLISTS_DSN")),
-	)
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	var svc checks.Service
+	var svcApps application.Service
+
+	go func() {
+		defer wg.Done()
+
+		opts := []checks.Option{}
+		if !noDb {
+			opts = append(opts, checks.WithDb(os.Getenv("CHECKLISTS_DSN")))
+		}
+		svc = checks.NewService(opts...)
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		opts := []application.Option{}
+		if !noDb {
+			opts = append(opts, application.WithDb(os.Getenv("CHECKLISTS_DSN")))
+		}
+		svcApps = application.NewService(opts...)
+	}()
+
+	wg.Wait()
+
 	iFactsClient := &iFacts.Client{}
 
 	fmt.Println("Listening on", addr)
