@@ -2,24 +2,18 @@
 
 <form class="ui form">
     <div class="ui vertical segment">
-        <div class="field">
-            <div class="ui search">
-                <div class="ui icon input">
-                    <input class="prompt" type="text" placeholder="application name">
-                    <i class="search icon"></i>
-                </div>
-                <div class="results"></div>
-            </div>
-        </div>
         <div class="fields">
-            <div class="four wide field">
+            <div class="twelve wide field">
                 <label>Name</label>
-                <div class="ui icon input">
-                    <input type="text" name="appName" id="appName" placeholder="application name">
-                    <i class="search link icon" id="qryAppByName"></i>
+                <div class="ui search">
+                    <div class="ui icon input">
+                        <input class="prompt" type="text" name="appName" id="appName" placeholder="application name">
+                        <i class="search icon"></i>
+                    </div>
+                    <div class="results"></div>
                 </div>
             </div>
-            <div class="twelve wide field">
+            <div class="four wide field">
                 <label>ID</label>
                 <input type="text" name="appID" id="appID" placeholder="application id">
             </div>
@@ -106,24 +100,26 @@ $(".ui.search")
         $.each(remoteResp.Assets, function (index, item) {
             if (index >= maxResults) { return false; }
 
-            var name = item.MetaData.AssetApplicationMetadata.ApplicationName;
-            var id = item.MetaData.AssetApplicationMetadata.ApplicationId;
-            var type = item.MetaData.AssetApplicationMetadata.DeploymentType;
-
-            console.log("new item", name, id, type)
+            var name = item.MetaData.AsssetApplicationMetadata.ApplicationName;
+            var id = item.MetaData.AsssetApplicationMetadata.ApplicationId;
 
             response.results.push({
+                appId: id,
                 title: name,
-                description: id + " " + name + " (" + type + ")"
+                description: id + " " + name
             });
         });
-      }
-      onSelect: function(result, response) {
-        console.log('result', result);
-        console.log('response', response);
-        return false;
+        return response;
       }
     },
+    onSelect: function(result, response) {
+        console.log('result', result);
+        console.log('response', response);
+        $("#appID").val(result.appId);
+        return true;
+    },
+    fullTextSearch: false,
+    searchOnFocus: false,
     minCharacters : 3
   })
 ;
