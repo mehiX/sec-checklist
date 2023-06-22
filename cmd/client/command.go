@@ -58,7 +58,7 @@ func serve() {
 
 func showTemplate(t *template.Template, name string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", "text/html")
+		w.Header().Set("Content-type", "text/html; charset=utf-8")
 		if err := t.ExecuteTemplate(w, name, nil); err != nil {
 			log.Printf("Executing template index: %v\n", err.Error())
 			w.Write([]byte(err.Error()))

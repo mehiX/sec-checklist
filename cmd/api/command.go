@@ -6,8 +6,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
+	"text/tabwriter"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
 	"github.com/mehix/sec-checklist/pkg/server"
@@ -96,7 +99,9 @@ func serve() {
 	iFactsClient := &iFacts.Client{}
 
 	fmt.Println("Listening on", addr)
-	if err := http.ListenAndServe(addr, server.Handlers(svc, svcApps, iFactsClient)); err != nil && err != http.ErrServerClosed {
+	h := server.Handlers(svc, svcApps, iFactsClient)
+	printRoutesHelp(h)
+	if err := http.ListenAndServe(addr, h); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 
@@ -120,6 +125,36 @@ func importData() {
 
 	if err := svc.SaveAll(context.Background(), ctrls); err != nil {
 		log.Printf("Saving checks to database: %v\n", err)
+	}
+
+}
+
+func printRoutesHelp(h http.Handler) {
+	r, ok := h.(*chi.Mux)
+	if !ok {
+		return
+	}
+	var out = tabwriter.NewWriter(os.Stdout, 10, 8, 0, '\t', 0)
+	printHelp(out, "", r.Routes())
+	out.Flush()
+
+}
+
+func printHelp(out *tabwriter.Writer, parentPattern string, routes []chi.Route) {
+
+	fmt.Fprintln(out)
+
+	for _, r := range routes {
+		ptrn := strings.TrimSuffix(r.Pattern, "/*")
+		if r.SubRoutes != nil {
+			printHelp(out, parentPattern+ptrn, r.SubRoutes.Routes())
+		} else {
+			for m := range r.Handlers {
+				fmt.Fprintf(out, "[%s]\t%s\n", m, parentPattern+ptrn)
+			}
+			fmt.Fprintln(out)
+		}
+
 	}
 
 }

@@ -37,15 +37,19 @@ func Handlers(svc checks.Service, svcApps application.Service, iFactsClient *iFa
 
 	//r.Use(middleware.RedirectSlashes)
 
-	r.Get("/apps/", listAllApps(svcApps))
-	r.Post("/apps", saveApp(svcApps))
-	r.Get("/apps/{id:[0-9]+}", showAppByID(svcApps))
-	r.Put("/apps/{id:[0-9]+}", updateApp(svcApps))
-	r.Get("/apps/search/remote", searchAppByNameRemote(iFactsClient))
+	r.Route("/apps", func(r chi.Router) {
+		r.Get("/", listAllApps(svcApps))
+		r.Post("/", saveApp(svcApps))
+		r.Get("/{id:[0-9]+}", showAppByID(svcApps))
+		r.Put("/{id:[0-9]+}", updateApp(svcApps))
+		r.Get("/search/remote", searchAppByNameRemote(iFactsClient))
+	})
 
-	r.Get("/controls/", showAll(svc))
-	r.Post("/controls/", showFiltered(svc))
-	r.Get("/controls/{id:[0-9.]+}", showOne(svc))
+	r.Route("/controls", func(r chi.Router) {
+		r.Get("/", showAll(svc))
+		r.Post("/", showFiltered(svc))
+		r.Get("/{id:[0-9.]+}", showOne(svc))
+	})
 
 	r.Post("/ifacts/config", configIFactsClient(iFactsClient))
 	r.Method(http.MethodGet, "/ifacts/*", http.StripPrefix("/ifacts", http.HandlerFunc(forwardGetToIFacts(iFactsClient))))
