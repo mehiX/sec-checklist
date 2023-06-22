@@ -52,6 +52,7 @@ func Handlers(svc checks.Service, svcApps application.Service, iFactsClient *iFa
 	})
 
 	r.Post("/ifacts/config", configIFactsClient(iFactsClient))
+	// forward a request to iFacts and return the result
 	r.Method(http.MethodGet, "/ifacts/*", http.StripPrefix("/ifacts", http.HandlerFunc(forwardGetToIFacts(iFactsClient))))
 
 	r.Get("/docs/controls/filter", showFiltered(svc))

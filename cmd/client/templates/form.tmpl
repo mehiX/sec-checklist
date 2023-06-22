@@ -99,12 +99,30 @@
 $(".ui.search")
     .search({
     apiSettings: {
-      url: '//127.0.0.1:8080/apps/search/remote?q={query}'
-    },
-    fields: {
-      results : 'Assets',
-      title   : 'MetaData.AssetApplicationMetadata.ApplicationName',
-      price   : 'MetaData.AssetApplicationMetadata.ApplicationId'
+      url: '//127.0.0.1:8080/apps/search/remote?q={query}',
+      onResponse: function(remoteResp) {
+        var response = { results: []};
+        var maxResults = 8;
+        $.each(remoteResp.Assets, function (index, item) {
+            if (index >= maxResults) { return false; }
+
+            var name = item.MetaData.AssetApplicationMetadata.ApplicationName;
+            var id = item.MetaData.AssetApplicationMetadata.ApplicationId;
+            var type = item.MetaData.AssetApplicationMetadata.DeploymentType;
+
+            console.log("new item", name, id, type)
+
+            response.results.push({
+                title: name,
+                description: id + " " + name + " (" + type + ")"
+            });
+        });
+      }
+      onSelect: function(result, response) {
+        console.log('result', result);
+        console.log('response', response);
+        return false;
+      }
     },
     minCharacters : 3
   })
