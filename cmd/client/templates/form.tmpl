@@ -121,10 +121,23 @@ $(".ui.search")
         console.log('result', result);
         console.log('response', response);
         $("#appID").val(result.appId);
-        $("#confidentiality").html(result.all.MetaData.GeneralMetaData.Confidentiality);
-        $("#integrity").html(result.all.MetaData.GeneralMetaData.Integrity);
-        $("#availability").html(result.all.MetaData.GeneralMetaData.Availability);
-        $("#traceability").html(result.all.MetaData.GeneralMetaData.Traceability);
+
+        var fromIFacts = $.get({
+            url:'//127.0.0.1:8080/ifacts/api/v1/assets/getgeneralsection/'+result.all.Id,
+            contentType: 'application/json',
+            dataType: 'json',
+            complete: function(data) {
+                $("#confidentiality").html(data.Confidentiality);
+                $("#integrity").html(data.Integrity);
+                $("#availability").html(data.Availability);
+                $("#traceability").html(data.Traceability);
+            }
+        });
+
+        fromIFacts.done(function(data) {
+            console.log("response from iFacts", data);
+        });
+
         return true;
     },
     fullTextSearch: false,
@@ -145,23 +158,6 @@ $("#qryAppByName").on("click", function (event) {
     $("#appName").parent().toggleClass("loading");
     $("#qryAppByName").toggleClass("link");
     console.log("calling iFacts");
-
-    var fromIFacts = $.get({
-        url:'//127.0.0.1:8080/apps/search/remote',
-        contentType: 'application/json',
-        dataType: 'json',
-        data: {
-            q: appName
-        },
-        complete: function() {
-            $("#appName").parent().toggleClass("loading");
-            $("#qryAppByName").toggleClass("link");
-        }
-    });
-
-    fromIFacts.done(function(data) {
-        console.log("response from iFacts", data);
-    });
 
 });
 

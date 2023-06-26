@@ -53,3 +53,8 @@ func (c *Client) SearchByName(name string, f func(*http.Response) error) error {
 
 	return c.Request(http.MethodPost, "/api/v1/assets/search", &body, f)
 }
+
+func (c *Client) AssetGeneralSection(id string, f func(*http.Response) error) error {
+
+	return c.Request(http.MethodGet, fmt.Sprintf("/api/v1/assets/getgeneralsection/%s", id), nil, f)
+}
