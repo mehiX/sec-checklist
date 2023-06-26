@@ -18,6 +18,10 @@
                 <input type="text" name="appID" id="appID" placeholder="application id">
             </div>
         </div>
+        <p>C: <span id="confidentiality"></span></p>
+        <p>I: <span id="integrity"></span></p>
+        <p>A: <span id="availability"></span></p>
+        <p>T: <span id="traceability"></span></p>
     </div>
     <div class="ui vertical segment">
         <h4 class="ui header">General or specific  controls for specific roles (handled centraly only, not for system/data owners)?</h4>
@@ -106,7 +110,8 @@ $(".ui.search")
             response.results.push({
                 appId: id,
                 title: name,
-                description: id + " " + name
+                description: id + " " + name,
+                all: item
             });
         });
         return response;
@@ -116,10 +121,14 @@ $(".ui.search")
         console.log('result', result);
         console.log('response', response);
         $("#appID").val(result.appId);
+        $("#confidentiality").html(result.all.MetaData.GeneralMetaData.Confidentiality);
+        $("#integrity").html(result.all.MetaData.GeneralMetaData.Integrity);
+        $("#availability").html(result.all.MetaData.GeneralMetaData.Availability);
+        $("#traceability").html(result.all.MetaData.GeneralMetaData.Traceability);
         return true;
     },
     fullTextSearch: false,
-    searchOnFocus: false,
+    searchOnFocus: true,
     minCharacters : 3
   })
 ;

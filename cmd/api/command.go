@@ -96,7 +96,9 @@ func serve() {
 
 	wg.Wait()
 
-	iFactsClient := &iFacts.Client{}
+	iFactsClient := &iFacts.Client{
+		BaseURL: "https://ifacts.corp.vattenfall.com/",
+	}
 
 	fmt.Println("Listening on", addr)
 	h := server.Handlers(svc, svcApps, iFactsClient)
