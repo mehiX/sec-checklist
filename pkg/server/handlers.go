@@ -32,11 +32,9 @@ func forwardGetToIFacts(ifc *iFacts.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		copyResponse := func(resp *http.Response) error {
-			if resp.StatusCode != http.StatusOK {
-				return fmt.Errorf("iFacts response: %s", resp.Status)
-			}
-
+			w.WriteHeader(resp.StatusCode)
 			_, err := io.Copy(w, resp.Body)
+
 			return err
 		}
 
