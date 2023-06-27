@@ -130,6 +130,7 @@ $(".ui.search")
 
         fromIFacts.done(function(data) {
             classif = $("#classification");
+            classif.html("");
             classif.append($("p", {
                 text: 'Description: ' + data.Description
             }));

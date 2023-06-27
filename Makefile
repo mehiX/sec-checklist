@@ -41,6 +41,10 @@ test-unit:
 start-api: binary
 	./dist/secctrls api serve --http 127.0.0.1:8080
 
+.PHONY: start-api-nodb
+start-api-nodb: binary
+	./dist/secctrls api serve --http 127.0.0.1:8080 --no-db
+
 .PHONY: start-client
 start-client: binary
 	./dist/secctrls client --api http://localhost:8080 --http 127.0.0.1:8081

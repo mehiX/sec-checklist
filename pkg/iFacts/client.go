@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"net/http/httputil"
 )
 
 type Client struct {
@@ -31,6 +33,13 @@ func (c *Client) Request(method, endPoint string, body io.Reader, f func(*http.R
 		return err
 	}
 	defer resp.Body.Close()
+
+	if dmp, err := httputil.DumpResponse(resp, true); err == nil {
+		fmt.Println("Response:")
+		fmt.Println(string(dmp))
+	} else {
+		log.Println(err)
+	}
 
 	// it's cleaner this way, since we should wait for f to return and then close the body
 	err = f(resp)
