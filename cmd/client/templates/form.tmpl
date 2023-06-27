@@ -128,22 +128,22 @@ $(".ui.search")
             }
         });
 
-        fromIFacts.done(function(data) {
+        fromIFactsGenSection.done(function(data) {
             classif = $("#classification");
             classif.html("");
-            classif.append($("p", {
+            classif.append($("<p>", {
                 text: 'Description: ' + data.Description
             }));
-            classif.append($("p", {
+            classif.append($("<p>", {
                 text: 'C: ' + data.Confidentiality
             }));
-            classif.append($("p", {
+            classif.append($("<p>", {
                 text: 'I: ' + data.Integrity
             }));
-            classif.append($("p", {
+            classif.append($("<p>", {
                 text: 'A: ' + data.Availability
             }));
-            classif.append($("p", {
+            classif.append($("<p>", {
                 text: 'T: ' + data.Traceability
             }));
         });

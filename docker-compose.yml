@@ -41,13 +41,19 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    environment:
+      - CHECKLISTS_DSN=test:test@tcp(db)/test
+      - EXCEL_PATH=${EXCEL_PATH}
+      - SHEET_NAME=${SHEET_NAME}
     command:
     - api
     - load
     - --from 
-    - ${EXCEL_FILEPATH}
+    - ${EXCEL_PATH}
     - --fromSheet 
     - ${SHEET_NAME} 
+    volumes:
+      - ./data:/data
     depends_on:
       - db
 
