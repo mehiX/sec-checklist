@@ -179,7 +179,7 @@ func showFiltered(svc checks.Service) http.HandlerFunc {
 func handleError(w http.ResponseWriter, err error) {
 
 	resp := struct {
-		Error string
+		Error string `json:"error"`
 	}{
 		Error: err.Error(),
 	}

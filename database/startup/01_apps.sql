@@ -1,13 +1,15 @@
 CREATE TABLE APPS (
-    ID varchar(16) NOT NULL,
+    ID varchar(36) NOT NULL,
+    internal_id int not NULL,
     name varchar(256) NOT NULL,
     inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT NULL,
+    UNIQUE KEY app_internal_id(internal_id),
     PRIMARY KEY APPS_ID(ID)
 );
 
 CREATE TABLE APP_PROFILES (
-    APP_ID varchar(16) NOT NULL,
+    APP_ID varchar(36) NOT NULL,
     only_handle_centrally boolean DEFAULT FALSE,
     handled_centrally_by varchar(80) DEFAULT '',
     excluded_for_external_supplier boolean DEFAULT FALSE,
@@ -33,7 +35,9 @@ SET NEW.updated_at = CURRENT_TIMESTAMP;
 
 CREATE VIEW V_APPS AS
     select 
-        a.*, 
+        a.ID,
+        a.internal_id,
+        a.name, 
         ap.only_handle_centrally,
         ap.handled_centrally_by,
         ap.excluded_for_external_supplier,

@@ -19,9 +19,9 @@ type repository struct {
 func NewRepository(dsn string) application.ReaderWriter {
 	db, err := db.ConnWithRetry(db.Conn, 5, time.Second, time.Minute)(context.Background(), dsn)
 	if err != nil {
-		log.Println("DB connection failed", err)
+		log.Println("APPS DB connection failed", err)
 	} else {
-		fmt.Println("Connected to database")
+		fmt.Println("Connected to APPS DB")
 	}
 
 	return &repository{db: db}
@@ -57,7 +57,7 @@ func (r *repository) ListAll(ctx context.Context) ([]application.Application, er
 }
 
 func (r *repository) Save(ctx context.Context, app *application.Application) (err error) {
-	insertApp := "insert into APPS (id, name) values (?, ?)"
+	insertApp := "insert into APPS (id, internal_id, name) values (?, ?, ?)"
 	insertAppProfile := `insert into APP_PROFILES (
 		APP_ID, only_handle_centrally,handled_centrally_by,excluded_for_external_supplier,software_development_relevant,
         cloud_only,physical_security_only,personal_security_only) values (?, ?, ?, ?, ?, ?, ?, ?)`
@@ -78,7 +78,7 @@ func (r *repository) Save(ctx context.Context, app *application.Application) (er
 		}
 	}()
 
-	_, err = tx.ExecContext(ctx, insertApp, app.ID, app.Name)
+	_, err = tx.ExecContext(ctx, insertApp, app.ID, app.InternalID, app.Name)
 	if err != nil {
 		return
 	}

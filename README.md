@@ -11,7 +11,7 @@ Create the environment file (replace the values with the correct ones for your e
 
 ```shell
 cat > .env <<EOF
-EXCEL_FILEPATH=/data/ISMS1042_VIT_v0.04.xlsx
+EXCEL_PATH=/data/ISMS1042_VIT_v0.04.xlsx
 SHEET_NAME='ISMS1042 6.2 with all labels'
 EOF
 ```

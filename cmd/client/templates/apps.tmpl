@@ -4,13 +4,29 @@
 
 <body>
     <div class="ui container">
-        <h1 class="ui header">Applications</h1>
-        <div class="ui segment hidden">
-            <div class="ui list" id="appsList"></div>
-        </div>
-        <div class="ui segment">
-            <a class="ui button addNew" href="/apps/new">Add new</a>
-        </div>
+        {{ if .SelectedAppID }}
+            {{ template "controls" . }}
+        {{ else }}
+            <h1 class="ui header">Applications</h1>
+            <div class="ui segment hidden">
+                <div class="ui list" id="appsList"></div>
+            </div>
+            <div class="ui segment">
+                <a class="ui button addNew" href="/apps/new">Add new</a>
+            </div>
+            <script>
+            $(window).on('load', function() {
+                var appReq = $.get('{{.ApiURL}}/apps/');
+                appReq.done(function(data) {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+                    console.log(data);
+                });
+            });
+            </script>
+        {{ end }}
     </div>
 </body>
 </html>

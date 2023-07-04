@@ -87,14 +87,14 @@
         </div>
     </div>
     <div class="ui vertical segment">
-        <div class="ui filter fluid button" tabindex="0">Filter controls</div>
+        <div class="ui save fluid button" tabindex="0">Save</div>
     </div>
 </form>
 <script>
 $(".ui.search")
     .search({
     apiSettings: {
-      url: '//127.0.0.1:8080/apps/search/remote?q={query}',
+      url: '{{.ApiURL}}/apps/search/remote?q={query}',
       onResponse: function(remoteResp) {
         var response = { results: []};
         var maxResults = 8;
@@ -120,7 +120,7 @@ $(".ui.search")
         $("#appID").val(result.appId);
 
         var fromIFactsGenSection = $.get({
-            url:'//127.0.0.1:8080/ifacts/api/v1/assets/getgeneralsection/'+result.all.Id,
+            url:'{{.ApiURL}}/ifacts/api/v1/assets/getgeneralsection/'+result.all.Id,
             contentType: 'application/json',
             dataType: 'json',
             complete: function(data) {
@@ -180,11 +180,13 @@ $('.ui.checkbox')
   .checkbox()
 ;
 
-$('.ui.filter.button').on('click', function(event) {
+$('.ui.save.button').on('click', function(event) {
     event.preventDefault();
 
+    // TODO validate input
+
     var data = {
-      app_id: $("#appID").val(),
+      app_internal_id: parseInt($("#appID").val(), 10),
       app_name: $("#appName").val(),
       only_handle_centrally: isChecked("centralOnly"),
       handled_centrally_by: $("#ownerCentralOnly").val(),
@@ -196,13 +198,22 @@ $('.ui.filter.button').on('click', function(event) {
     };
 
     var posting = $.post({
-        url: '//127.0.0.1:8080/controls/', 
+        url: '{{.ApiURL}}/apps/', 
         contentType: 'application/json',
         dataType: 'json',
         data: JSON.stringify(data)
-    })
+    });
     
     posting.done(function(data) {
+        if (data.error) {
+            alert(data.error);
+            return false;
+        }
+
+        console.log(data);
+        window.location = '/apps/' + data.id;
+        return false;
+
         $('#results').empty();
         $.each(data, function(index, element) {
             $('#results').append($('<div>', {

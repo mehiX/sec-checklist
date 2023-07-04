@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/mehix/sec-checklist/pkg/domain/application"
 )
 
@@ -48,6 +49,8 @@ func (s *service) Save(ctx context.Context, app *application.Application) error 
 	if s.dbRepo == nil {
 		return ErrDbNotConnected
 	}
+
+	app.ID = uuid.NewString()
 
 	return s.dbRepo.Save(ctx, app)
 }

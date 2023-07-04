@@ -19,10 +19,11 @@ type repository struct {
 func NewRepository(dsn string) check.ReaderWriter {
 	db, err := db.ConnWithRetry(db.Conn, 5, time.Second, time.Minute)(context.Background(), dsn)
 	if err != nil {
-		log.Fatalln("DB connection failed", err)
+		log.Println("CHECKS DB connection failed", err)
+	} else {
+		fmt.Println("Connected to CHECKS DB")
 	}
 
-	fmt.Println("Connected to database")
 	return &repository{db: db}
 }
 

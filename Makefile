@@ -1,4 +1,4 @@
-EXCEL_FILE=./data/ISMS1042_VIT_v0.04.xlsx
+EXCEL_PATH=./data/ISMS1042_VIT_v0.04.xlsx
 EXCEL_SHEET='ISMS1042 6.2 with all labels'
 
 .PHONY: db-up
@@ -7,7 +7,7 @@ db-up:
 
 .PHONY: db-init
 db-init: down db-up binary
-	./dist/secctrls api load --from ${EXCEL_FILE} --fromSheet ${EXCEL_SHEET}
+	./dist/secctrls api load --from ${EXCEL_PATH} --fromSheet ${EXCEL_SHEET}
 
 .PHONY: down
 down:
