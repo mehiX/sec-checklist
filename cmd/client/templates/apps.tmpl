@@ -23,6 +23,16 @@
                         return;
                     }
                     console.log(data);
+                    $('#appsList').empty();
+                    $.each(data, function(index, elem) {
+                        var link = $('<a>', {text: elem.app_internal_id + ' - ' + elem.app_name, href:'/apps/'+elem.id});
+                        var listElem = $('<div>', {id: elem.id, class:'item'});
+                        listElem.append(link)
+                        $('#appsList').append(listElem);
+                    });
+                    if (data.length != 0) {
+                        $('#appsList').parent().toggleClass('hidden');
+                    }
                 });
             });
             </script>

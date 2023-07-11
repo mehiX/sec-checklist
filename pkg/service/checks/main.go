@@ -16,6 +16,8 @@ type Service interface {
 	FetchByType(string) ([]check.Control, error)
 	FetchByID(context.Context, string) (check.Control, error)
 	SaveAll(context.Context, []check.Control) error
+
+	FetchByApplicationID(context.Context, string) ([]check.Control, error)
 }
 
 type service struct {
@@ -64,4 +66,12 @@ func (s *service) FetchByID(ctx context.Context, id string) (check.Control, erro
 		return check.Control{}, ErrNoDb
 	}
 	return s.dbRepo.FetchByID(ctx, id)
+}
+
+func (s *service) FetchByApplicationID(ctx context.Context, id string) ([]check.Control, error) {
+	if s.dbRepo == nil {
+		return nil, ErrNoDb
+	}
+
+	return s.dbRepo.FetchByApplicationID(ctx, id)
 }

@@ -148,3 +148,7 @@ func (r *repository) SaveAll(ctx context.Context, all []check.Control) (err erro
 
 	return nil
 }
+
+func (r *repository) FetchByApplicationID(ctx context.Context, id string) ([]check.Control, error) {
+	return nil, fmt.Errorf("not implemented")
+}

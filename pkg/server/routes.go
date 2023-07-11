@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -40,8 +41,12 @@ func Handlers(svc checks.Service, svcApps application.Service, iFactsClient *iFa
 	r.Route("/apps", func(r chi.Router) {
 		r.Get("/", listAllApps(svcApps))
 		r.Post("/", saveApp(svcApps))
-		r.Get("/{id:[0-9]+}", showAppByID(svcApps))
-		r.Put("/{id:[0-9]+}", updateApp(svcApps))
+		r.Route("/{id:[0-9]+}", func(r chi.Router) {
+			r.Use(ApplicationCtx(svcApps))
+			r.Get("/", showAppByID(svcApps))
+			r.Put("/", updateApp(svcApps))
+			r.Get("/controls", controlsForApp(svc))
+		})
 		r.Get("/search/remote", searchAppByNameRemote(iFactsClient))
 	})
 
@@ -58,6 +63,27 @@ func Handlers(svc checks.Service, svcApps application.Service, iFactsClient *iFa
 	r.Get("/docs/controls/filter", showFiltered(svc))
 
 	return r
+}
+
+type applicationCtxKey struct{}
+
+var ApplicationCtxKey = &applicationCtxKey{}
+
+func ApplicationCtx(svc application.Service) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			appID := chi.URLParam(r, "id")
+			app, err := svc.FetchByID(r.Context(), appID)
+			if err != nil {
+				handleError(w, err)
+				return
+			}
+
+			ctx := context.WithValue(r.Context(), ApplicationCtxKey, app)
+			h.ServeHTTP(w, r.WithContext(ctx))
+
+		})
+	}
 }
 
 func showOne(svc checks.Service) http.HandlerFunc {

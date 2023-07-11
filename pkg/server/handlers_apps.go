@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	appDomain "github.com/mehix/sec-checklist/pkg/domain/application"
 	"github.com/mehix/sec-checklist/pkg/service/application"
+	"github.com/mehix/sec-checklist/pkg/service/checks"
 )
 
 func listAllApps(svc application.Service) http.HandlerFunc {
@@ -32,10 +32,9 @@ func showAppByID(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
 
-		appID := chi.URLParam(r, "id")
-		app, err := svc.FetchByID(r.Context(), appID)
-		if err != nil {
-			handleError(w, err)
+		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		if !ok {
+			handleError(w, fmt.Errorf("missing application"))
 			return
 		}
 
@@ -79,6 +78,12 @@ func updateApp(svc application.Service) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		if !ok {
+			handleError(w, fmt.Errorf("missing application"))
+			return
+		}
+
 		w.Header().Set("Content-type", "application/json")
 
 		var p appDomain.Application
@@ -87,11 +92,37 @@ func updateApp(svc application.Service) http.HandlerFunc {
 			return
 		}
 
+		p.ID = app.ID
+
 		if err := svc.Update(r.Context(), &p); err != nil {
 			handleError(w, err)
 			return
 		}
 
 		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func controlsForApp(svc checks.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		if !ok {
+			handleError(w, fmt.Errorf("missing application"))
+			return
+		}
+
+		ctrls, err := svc.FetchByApplicationID(r.Context(), app.ID)
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(ctrls); err != nil {
+			log.Printf("Encoding controls for app: %v\n", err)
+			handleError(w, err)
+			return
+		}
 	}
 }

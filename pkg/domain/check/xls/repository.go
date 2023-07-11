@@ -78,6 +78,10 @@ func (r *repository) FetchAll() ([]check.Control, error) {
 	return controls, nil
 }
 
+func (r *repository) FetchByApplicationID(ctx context.Context, id string) ([]check.Control, error) {
+	return nil, fmt.Errorf("not supported")
+}
+
 func fromRowData(row []string) check.Control {
 	// some rows may have less columns filled with data
 	cols := make([]string, 30)
