@@ -89,6 +89,10 @@
     <div class="ui vertical segment">
         <div class="ui save fluid button" tabindex="0">Save</div>
     </div>
+    <div class="ui vertical segment">
+        <div class="ui controls fluid button" tabindex="0">View controls</div>
+    </div>
+    <div id="results" class="ui segment hidden"></div>
 </form>
 <script>
 $(".ui.search")
@@ -179,6 +183,47 @@ $('.ui.inline.dropdown')
 $('.ui.checkbox')
   .checkbox()
 ;
+
+$('.ui.controls.button').on('click', function(ev) {
+    ev.preventDefault();
+
+    var data = {
+      app_internal_id: parseInt($("#appID").val(), 10),
+      app_name: $("#appName").val(),
+      only_handle_centrally: isChecked("centralOnly"),
+      handled_centrally_by: $("#ownerCentralOnly").val(),
+      exclude_for_external_supplier: isChecked("onlyExternalSupplier"),
+      software_development_relevant: isChecked("softwareDev"),
+      cloud_only: isChecked("cloudOnly"),
+      physical_security_only: isChecked("physicalSecOnly"),
+      personal_security_only: isChecked("persSecOnly")
+    };
+
+    var posting = $.post({
+        url: '{{.ApiURL}}/controls/', 
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify(data)
+    });
+    
+    posting.done(function(data) {
+        if (data && data.error) {
+            alert(data.error);
+            return false;
+        }
+
+        $('#results').empty();
+        $.each(data, function(index, element) {
+            $('#results').append($('<div>', {
+                text: element.ID + "-" + element.Name
+            }));
+        });
+        if (data) {
+            $('#results').toggleClass('hidden');
+            console.log(data);
+        }
+    });
+});
 
 $('.ui.save.button').on('click', function(event) {
     event.preventDefault();

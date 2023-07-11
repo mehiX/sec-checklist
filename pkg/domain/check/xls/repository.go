@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/mehix/sec-checklist/pkg/domain/application"
 	"github.com/mehix/sec-checklist/pkg/domain/check"
 	"github.com/xuri/excelize/v2"
 )
@@ -78,7 +79,7 @@ func (r *repository) FetchAll() ([]check.Control, error) {
 	return controls, nil
 }
 
-func (r *repository) FetchByApplicationID(ctx context.Context, id string) ([]check.Control, error) {
+func (r *repository) FetchForApplication(ctx context.Context, app *application.Application) ([]check.Control, error) {
 	return nil, fmt.Errorf("not supported")
 }
 

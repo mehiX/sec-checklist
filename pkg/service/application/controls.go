@@ -1,36 +1,24 @@
-package checks
+package application
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/mehix/sec-checklist/pkg/domain/application"
 	"github.com/mehix/sec-checklist/pkg/domain/check"
 )
 
 var ErrNoDb = fmt.Errorf("not connected to a database")
 var ErrNoExcel = fmt.Errorf("no Excel file specified")
 
-type Service interface {
+type ControlsService interface {
 	FetchAllFromExcel() ([]check.Control, error)
 	FetchAll() ([]check.Control, error)
 	FetchByType(string) ([]check.Control, error)
-	FetchByID(context.Context, string) (check.Control, error)
+	FetchControlByID(context.Context, string) (check.Control, error)
 	SaveAll(context.Context, []check.Control) error
 
-	FetchByApplicationID(context.Context, string) ([]check.Control, error)
-}
-
-type service struct {
-	xlsRepo check.Reader
-	dbRepo  check.ReaderWriter
-}
-
-func NewService(options ...Option) Service {
-	s := &service{}
-	for _, o := range options {
-		o(s)
-	}
-	return s
+	FetchByApplication(context.Context, *application.Application) ([]check.Control, error)
 }
 
 func (s *service) FetchAllFromExcel() ([]check.Control, error) {
@@ -61,17 +49,17 @@ func (s *service) SaveAll(ctx context.Context, all []check.Control) error {
 	return s.dbRepo.SaveAll(ctx, all)
 }
 
-func (s *service) FetchByID(ctx context.Context, id string) (check.Control, error) {
+func (s *service) FetchControlByID(ctx context.Context, id string) (check.Control, error) {
 	if s.dbRepo == nil {
 		return check.Control{}, ErrNoDb
 	}
 	return s.dbRepo.FetchByID(ctx, id)
 }
 
-func (s *service) FetchByApplicationID(ctx context.Context, id string) ([]check.Control, error) {
+func (s *service) FetchByApplication(ctx context.Context, app *application.Application) ([]check.Control, error) {
 	if s.dbRepo == nil {
 		return nil, ErrNoDb
 	}
 
-	return s.dbRepo.FetchByApplicationID(ctx, id)
+	return s.dbRepo.FetchForApplication(ctx, app)
 }

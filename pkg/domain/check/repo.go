@@ -1,12 +1,16 @@
 package check
 
-import "context"
+import (
+	"context"
+
+	"github.com/mehix/sec-checklist/pkg/domain/application"
+)
 
 type Reader interface {
 	FetchAll() ([]Control, error)
 	FetchByType(string) ([]Control, error)
 	FetchByID(context.Context, string) (Control, error)
-	FetchByApplicationID(context.Context, string) ([]Control, error)
+	FetchForApplication(context.Context, *application.Application) ([]Control, error)
 }
 
 type Writer interface {

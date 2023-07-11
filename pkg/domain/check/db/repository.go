@@ -8,6 +8,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/mehix/sec-checklist/pkg/domain/application"
 	"github.com/mehix/sec-checklist/pkg/domain/check"
 	"github.com/mehix/sec-checklist/pkg/domain/db"
 )
@@ -149,6 +150,54 @@ func (r *repository) SaveAll(ctx context.Context, all []check.Control) (err erro
 	return nil
 }
 
-func (r *repository) FetchByApplicationID(ctx context.Context, id string) ([]check.Control, error) {
-	return nil, fmt.Errorf("not implemented")
+func (r *repository) FetchForApplication(ctx context.Context, app *application.Application) ([]check.Control, error) {
+	qry := "select * from V_CHECKS where 1=1"
+	args := make([]any, 0)
+
+	if app.OnlyHandledCentrally {
+		qry += " AND only_handle_centrally = ?"
+		args = append(args, app.OnlyHandledCentrally)
+	}
+	if app.HandledCentrallyBy != "" {
+		qry += " AND handled_centrally_by = ?"
+		args = append(args, app.HandledCentrallyBy)
+	}
+	if app.ExcludeForExternalSupplier {
+		qry += " AND excluded_for_external_supplier = ?"
+		args = append(args, app.ExcludeForExternalSupplier)
+	}
+	if app.SoftwareDevelopmentRelevant {
+		qry += " AND software_development_relevant = ?"
+		args = append(args, app.SoftwareDevelopmentRelevant)
+	}
+	if app.CloudOnly {
+		qry += " AND cloud_only = ?"
+		args = append(args, app.CloudOnly)
+	}
+	if app.PhysicalSecurityOnly {
+		qry += " AND physical_security_only = ?"
+		args = append(args, app.PhysicalSecurityOnly)
+	}
+	if app.PersonalSecurityOnly {
+		qry += " AND personal_security_only = ?"
+		args = append(args, app.PersonalSecurityOnly)
+	}
+
+	rows, err := r.db.QueryContext(ctx, qry, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ctrls []check.Control
+	for rows.Next() {
+		ctrl, err := scanForControl(rows)
+		if err != nil {
+			log.Printf("Scanning SQL row: %v\n", err)
+			continue
+		}
+		ctrls = append(ctrls, ctrl)
+	}
+
+	return ctrls, nil
 }

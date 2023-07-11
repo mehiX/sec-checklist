@@ -15,7 +15,6 @@ import (
 	"github.com/mehix/sec-checklist/pkg/iFacts"
 	"github.com/mehix/sec-checklist/pkg/server"
 	"github.com/mehix/sec-checklist/pkg/service/application"
-	"github.com/mehix/sec-checklist/pkg/service/checks"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
 )
@@ -71,27 +70,18 @@ func serve() {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	var svc checks.Service
-	var svcApps application.Service
+	svcApps := application.NewService()
 
 	go func() {
 		defer wg.Done()
 
-		opts := []checks.Option{}
-		if !noDb {
-			opts = append(opts, checks.WithDb(os.Getenv("CHECKLISTS_DSN")))
-		}
-		svc = checks.NewService(opts...)
+		application.WithControlsDb(os.Getenv("CHECKLISTS_DSN"))(svcApps)
 	}()
 
 	go func() {
 		defer wg.Done()
 
-		opts := []application.Option{}
-		if !noDb {
-			opts = append(opts, application.WithDb(os.Getenv("CHECKLISTS_DSN")))
-		}
-		svcApps = application.NewService(opts...)
+		application.WithAppsDb(os.Getenv("CHECKLISTS_DSN"))(svcApps)
 	}()
 
 	wg.Wait()
@@ -101,7 +91,7 @@ func serve() {
 	}
 
 	fmt.Println("Listening on", addr)
-	h := server.Handlers(svc, svcApps, iFactsClient)
+	h := server.Handlers(svcApps, iFactsClient)
 	printRoutesHelp(h)
 	if err := http.ListenAndServe(addr, h); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
@@ -110,9 +100,9 @@ func serve() {
 }
 
 func importData() {
-	svc := checks.NewService(
-		checks.WithDb(os.Getenv("CHECKLISTS_DSN")),
-		checks.WithXls(fromExcel, fromSheet),
+	svc := application.NewService(
+		application.WithControlsDb(os.Getenv("CHECKLISTS_DSN")),
+		application.WithXls(fromExcel, fromSheet),
 	)
 
 	fmt.Printf("Read Excel file: %s\n", fromExcel)

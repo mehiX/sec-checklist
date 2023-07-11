@@ -40,15 +40,3 @@ type Control struct {
 func (e Control) String() string {
 	return fmt.Sprintf("%s - %s [%s]", e.ID, e.Name, e.Type)
 }
-
-type Application struct {
-	ID                          string
-	Name                        string
-	OnlyHandledCentrally        bool
-	HandledCentrallyBy          string
-	ExcludeForExternalSupplier  bool
-	SoftwareDevelopmentRelevant bool
-	CloudOnly                   bool
-	PhysicalSecurityOnly        bool
-	PersonalSecurityOnly        bool
-}

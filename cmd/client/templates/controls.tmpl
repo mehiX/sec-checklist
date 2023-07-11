@@ -1,5 +1,28 @@
 {{ define "controls" }}
     <p>Show template for app {{ .SelectedAppID }}</p>
-    <div class="ui segment" id="results">
+    <div class="ui segment" id="results"></div>
 
+    <script>
+    $(window).on('load', function() {
+        var controls = $.get({
+            url: '{{.ApiURL}}/apps/{{.SelectedAppID}}/controls', 
+            dataType: 'json'
+        });
+        
+        controls.done(function(data) {
+            if (data.error) {
+                alert(data.error);
+                return false;
+            }
+
+            $('#results').empty();
+            $.each(data, function(index, element) {
+                $('#results').append($('<div>', {
+                    text: element.ID + "-" + element.Name
+                }));
+            });
+            console.log(data);
+        });
+    });
+    </script>
 {{ end }}

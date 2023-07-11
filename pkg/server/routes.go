@@ -13,10 +13,9 @@ import (
 	"github.com/mehix/sec-checklist/pkg/domain/check"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
 	"github.com/mehix/sec-checklist/pkg/service/application"
-	"github.com/mehix/sec-checklist/pkg/service/checks"
 )
 
-func Handlers(svc checks.Service, svcApps application.Service, iFactsClient *iFacts.Client) http.Handler {
+func Handlers(svcApps application.Service, iFactsClient *iFacts.Client) http.Handler {
 	r := chi.NewMux()
 
 	r.Use(middleware.Logger)
@@ -41,26 +40,26 @@ func Handlers(svc checks.Service, svcApps application.Service, iFactsClient *iFa
 	r.Route("/apps", func(r chi.Router) {
 		r.Get("/", listAllApps(svcApps))
 		r.Post("/", saveApp(svcApps))
-		r.Route("/{id:[0-9]+}", func(r chi.Router) {
+		r.Route("/{id:[0-9a-zA-Z-]+}", func(r chi.Router) {
 			r.Use(ApplicationCtx(svcApps))
 			r.Get("/", showAppByID(svcApps))
 			r.Put("/", updateApp(svcApps))
-			r.Get("/controls", controlsForApp(svc))
+			r.Get("/controls", controlsForApp(svcApps))
 		})
 		r.Get("/search/remote", searchAppByNameRemote(iFactsClient))
 	})
 
 	r.Route("/controls", func(r chi.Router) {
-		r.Get("/", showAll(svc))
-		r.Post("/", showFiltered(svc))
-		r.Get("/{id:[0-9.]+}", showOne(svc))
+		r.Get("/", showAll(svcApps))
+		r.Post("/", showFiltered(svcApps))
+		r.Get("/{id:[0-9.]+}", showOneControl(svcApps))
 	})
 
 	r.Post("/ifacts/config", configIFactsClient(iFactsClient))
 	// forward a request to iFacts and return the result
 	r.Method(http.MethodGet, "/ifacts/*", http.StripPrefix("/ifacts", http.HandlerFunc(forwardGetToIFacts(iFactsClient))))
 
-	r.Get("/docs/controls/filter", showFiltered(svc))
+	r.Get("/docs/controls/filter", showFiltered(svcApps))
 
 	return r
 }
@@ -73,7 +72,7 @@ func ApplicationCtx(svc application.Service) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			appID := chi.URLParam(r, "id")
-			app, err := svc.FetchByID(r.Context(), appID)
+			app, err := svc.FetchApplicationByID(r.Context(), appID)
 			if err != nil {
 				handleError(w, err)
 				return
@@ -86,12 +85,12 @@ func ApplicationCtx(svc application.Service) func(http.Handler) http.Handler {
 	}
 }
 
-func showOne(svc checks.Service) http.HandlerFunc {
+func showOneControl(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
 		id := chi.URLParam(r, "id")
-		one, err := svc.FetchByID(r.Context(), id)
+		one, err := svc.FetchControlByID(r.Context(), id)
 		if err != nil {
 			handleError(w, err)
 			return
@@ -102,7 +101,7 @@ func showOne(svc checks.Service) http.HandlerFunc {
 		}
 	}
 }
-func showAll(svc checks.Service) http.HandlerFunc {
+func showAll(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
 
@@ -118,7 +117,7 @@ func showAll(svc checks.Service) http.HandlerFunc {
 	}
 }
 
-func showFiltered(svc checks.Service) http.HandlerFunc {
+func showFiltered(svc application.Service) http.HandlerFunc {
 
 	type filter struct {
 		OnlyHandleCentrally         *bool   `json:"only_handle_centrally,omitempty"`

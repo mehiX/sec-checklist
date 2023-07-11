@@ -8,7 +8,6 @@ import (
 
 	appDomain "github.com/mehix/sec-checklist/pkg/domain/application"
 	"github.com/mehix/sec-checklist/pkg/service/application"
-	"github.com/mehix/sec-checklist/pkg/service/checks"
 )
 
 func listAllApps(svc application.Service) http.HandlerFunc {
@@ -103,7 +102,7 @@ func updateApp(svc application.Service) http.HandlerFunc {
 	}
 }
 
-func controlsForApp(svc checks.Service) http.HandlerFunc {
+func controlsForApp(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
@@ -112,7 +111,7 @@ func controlsForApp(svc checks.Service) http.HandlerFunc {
 			return
 		}
 
-		ctrls, err := svc.FetchByApplicationID(r.Context(), app.ID)
+		ctrls, err := svc.FetchByApplication(r.Context(), app)
 		if err != nil {
 			handleError(w, err)
 			return
