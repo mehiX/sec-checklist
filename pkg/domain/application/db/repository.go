@@ -61,6 +61,8 @@ func (r *repository) Save(ctx context.Context, app *application.Application) (er
 	insertAppProfile := `insert into APP_PROFILES (
 		APP_ID, only_handle_centrally,handled_centrally_by,excluded_for_external_supplier,software_development_relevant,
         cloud_only,physical_security_only,personal_security_only) values (?, ?, ?, ?, ?, ?, ?, ?)`
+	insertAppClassifications := `insert into APP_CLASSIFICATIONS (
+		APP_ID, c, i, a, t) values (?, ?, ?, ?, ?)`
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -92,6 +94,13 @@ func (r *repository) Save(ctx context.Context, app *application.Application) (er
 		return
 	}
 
+	_, err = tx.ExecContext(
+		ctx, insertAppClassifications,
+		app.ID, app.C, app.I, app.A, app.T)
+	if err != nil {
+		return
+	}
+
 	return nil
 }
 
@@ -106,6 +115,7 @@ func (r *repository) Update(ctx context.Context, app *application.Application) (
 	 physical_security_only = ?,
 	 personal_security_only = ? 
 	 where APP_ID = ?`
+	updateAppClassifications := `update APP_CLASSIFICATIONS set c = ?, i = ?, a = ?, t = ? where APP_ID = ?`
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -134,6 +144,13 @@ func (r *repository) Update(ctx context.Context, app *application.Application) (
 		app.SoftwareDevelopmentRelevant, app.CloudOnly,
 		app.PhysicalSecurityOnly, app.PersonalSecurityOnly,
 		app.ID)
+	if err != nil {
+		return
+	}
+
+	_, err = tx.ExecContext(
+		ctx, updateAppClassifications,
+		app.C, app.I, app.A, app.T, app.ID)
 	if err != nil {
 		return
 	}

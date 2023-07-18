@@ -11,4 +11,8 @@ type Application struct {
 	CloudOnly                   bool   `json:"cloud_only"`
 	PhysicalSecurityOnly        bool   `json:"physical_security_only"`
 	PersonalSecurityOnly        bool   `json:"personal_security_only"`
+	C                           int    `json:"classif_c"`
+	I                           int    `json:"classif_i"`
+	A                           int    `json:"classif_a"`
+	T                           int    `json:"classif_t"`
 }

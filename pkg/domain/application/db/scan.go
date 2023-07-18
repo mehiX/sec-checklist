@@ -13,12 +13,14 @@ func scanForApp[T Scanner](s T) (*application.Application, error) {
 	var internalID int
 	var onlyHandleCentrally, excludedForExternalSupplier, softwareDevelopmentRelevant bool
 	var cloudOnly, physicalSecurityOnly, personalSecurityOnly bool
+	var c, i, a, t int
 
 	finalValues := []any{
 		&id, &internalID, &name,
 		&onlyHandleCentrally, &handledCentrallyBy, &excludedForExternalSupplier,
 		&softwareDevelopmentRelevant, &cloudOnly,
 		&physicalSecurityOnly, &personalSecurityOnly,
+		&c, &i, &a, &t,
 	}
 
 	if err := s.Scan(finalValues...); err != nil {
@@ -36,5 +38,9 @@ func scanForApp[T Scanner](s T) (*application.Application, error) {
 		CloudOnly:                   cloudOnly,
 		PhysicalSecurityOnly:        physicalSecurityOnly,
 		PersonalSecurityOnly:        personalSecurityOnly,
+		C:                           c,
+		I:                           i,
+		A:                           a,
+		T:                           t,
 	}, nil
 }

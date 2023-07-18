@@ -21,6 +21,46 @@
         <div id="classification"></div>
     </div>
     <div class="ui vertical segment">
+        <div class="four fields">
+            <div class="field">
+                <label data-tooltip="Ensuring information is only accessible to those who are authorized and not disclosed to unauthorized individuals, entities or processes.">Confidentiality (C)</label>
+                <select class="ui fluid dropdown classif" id="classif-c">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+            <div class="field">
+                <label data-tooltip="Ensuring the accuracy and completeness of information to guarantee that the information remains unchanged, correct and complete.">Integrity (I)</label>
+                <select class="ui fluid dropdown classif" id="classif-i">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+            <div class="field">
+                <label data-tooltip="Ensuring information is accessible and useable by an authorized individual, entity or process when required.">Availability (A)</label>
+                <select class="ui fluid dropdown classif" id="classif-a">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+            <div class="field">
+                <label data-tooltip="Ensuring that the origin of the information and any changes to it can be verified.">Traceability (T)</label>
+                <select class="ui fluid dropdown classif" id="classif-t">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="ui vertical segment">
         <h4 class="ui header">General or specific  controls for specific roles (handled centraly only, not for system/data owners)?</h4>
         <div class="field">
             <div class="ui toggle checkbox">
@@ -196,7 +236,11 @@ $('.ui.controls.button').on('click', function(ev) {
       software_development_relevant: isChecked("softwareDev"),
       cloud_only: isChecked("cloudOnly"),
       physical_security_only: isChecked("physicalSecOnly"),
-      personal_security_only: isChecked("persSecOnly")
+      personal_security_only: isChecked("persSecOnly"),
+      classif_c: parseInt($("#classif-c").val(), 10),
+      classif_i: parseInt($("#classif-i").val(), 10),
+      classif_a: parseInt($("#classif-a").val(), 10),
+      classif_t: parseInt($("#classif-t").val(), 10)
     };
 
     var posting = $.post({
@@ -239,7 +283,11 @@ $('.ui.save.button').on('click', function(event) {
       software_development_relevant: isChecked("softwareDev"),
       cloud_only: isChecked("cloudOnly"),
       physical_security_only: isChecked("physicalSecOnly"),
-      personal_security_only: isChecked("persSecOnly")
+      personal_security_only: isChecked("persSecOnly"),
+      classif_c: parseInt($("#classif-c").val(), 10),
+      classif_i: parseInt($("#classif-i").val(), 10),
+      classif_a: parseInt($("#classif-a").val(), 10),
+      classif_t: parseInt($("#classif-t").val(), 10)
     };
 
     var posting = $.post({
@@ -272,6 +320,8 @@ $('.ui.save.button').on('click', function(event) {
 function isChecked(id) {
     return $("#" + id).parent().hasClass("checked");
 }
+
+$(".ui.dropdown.classif").dropdown();
 
 </script>
 {{ end }}
