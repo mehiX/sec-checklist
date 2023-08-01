@@ -1,28 +1,58 @@
 {{ define "controls" }}
-    <p>Show template for app {{ .SelectedAppID }}</p>
-    <div class="ui segment" id="results"></div>
+    <p><a href="/apps">&lt; All apps</a></p>
+    <h2 class="ui header title">Show template for app {{ .SelectedAppID }}</h2>
+    <div class="ui list" id="results"></div>
 
     <script>
-    $(window).on('load', function() {
+    function showAppMetadata() {
+        var metadata = $.get({
+            url: '{{.ApiURL}}/apps/{{.SelectedAppID}}',
+            dataType: 'json'
+        });
+
+        metadata.done(function(data){
+            if (!data) {
+                return false;
+            }
+
+            $(".ui.header.title").html(data.app_name);
+            
+            console.log(data);
+        });
+    }
+
+    function showControls() {
         var controls = $.get({
             url: '{{.ApiURL}}/apps/{{.SelectedAppID}}/controls', 
             dataType: 'json'
         });
         
         controls.done(function(data) {
+            $('#results').empty();
+
+            if (!data) {
+                $('#results').append($("<div>", {class:"item", text:"(no controls found)"}));
+                return false;
+            }
+
             if (data.error) {
                 alert(data.error);
                 return false;
             }
 
-            $('#results').empty();
             $.each(data, function(index, element) {
                 $('#results').append($('<div>', {
-                    text: element.ID + "-" + element.Name
+                    text: element.ID + "-" + element.Name,
+                    class: "item"
                 }));
             });
             console.log(data);
         });
+        }
+
+    $(window).on('load', function() {
+        showAppMetadata();
+        showControls();
     });
     </script>
 {{ end }}
