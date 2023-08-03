@@ -15,6 +15,7 @@ type Reader interface {
 
 type Writer interface {
 	SaveAll(context.Context, []Control) error
+	SaveForApplication(context.Context, *application.Application, []Control) error
 }
 
 type ReaderWriter interface {

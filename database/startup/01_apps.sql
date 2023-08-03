@@ -35,6 +35,18 @@ CREATE TABLE APP_CLASSIFICATIONS (
     FOREIGN KEY fk_classifications_apps (APP_ID) REFERENCES APPS(ID) ON DELETE CASCADE
 );
 
+CREATE TABLE APP_CONTROLS (
+    APP_ID varchar(36) NOT NULL,
+    CHECK_ID varchar(16) NOT NULL,
+    is_done boolean DEFAULT FALSE,
+    notes varchar(10000) NOT NULL DEFAULT '',
+    inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT NULL,
+    PRIMARY KEY app_controls_pk(APP_ID, CHECK_ID),
+    FOREIGN KEY fk_app_controls_apps (APP_ID) REFERENCES APPS(ID) ON DELETE CASCADE,
+    FOREIGN KEY fk_app_controls_checks (CHECK_ID) REFERENCES CHECKS(ID) ON DELETE CASCADE
+);
+
 CREATE TRIGGER apps_row_update BEFORE UPDATE
 ON APPS
 FOR EACH ROW
@@ -47,6 +59,11 @@ SET NEW.updated_at = CURRENT_TIMESTAMP;
 
 CREATE TRIGGER app_classifications_row_update BEFORE UPDATE
 ON APP_CLASSIFICATIONS
+FOR EACH ROW
+SET NEW.updated_at = CURRENT_TIMESTAMP;
+
+CREATE TRIGGER app_controls_row_update BEFORE UPDATE
+ON APP_CONTROLS
 FOR EACH ROW
 SET NEW.updated_at = CURRENT_TIMESTAMP;
 
@@ -69,3 +86,15 @@ CREATE VIEW V_APPS AS
     from APPS a 
     inner join APP_PROFILES ap on a.ID = ap.APP_ID
     inner join APP_CLASSIFICATIONS ac on a.ID = ac.APP_ID;
+
+    CREATE VIEW V_APPS_CONTROLS AS
+        select
+            a.ID as app_id,
+            c.ID as check_id,
+            c.name,
+            c.description,
+            ac.is_done,
+            ac.notes
+        from APP_CONTROLS ac
+        inner join APPS a on a.ID = ac.APP_ID
+        inner join CHECKS c on c.ID = ac.CHECK_ID

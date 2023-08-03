@@ -55,7 +55,16 @@ func (s *service) Save(ctx context.Context, app *application.Application) error 
 
 	app.ID = uuid.NewString()
 
-	return s.appsDbRepo.Save(ctx, app)
+	if err := s.appsDbRepo.Save(ctx, app); err != nil {
+		return err
+	}
+
+	ctrls, err := s.FetchByApplication(ctx, app)
+	if err != nil {
+		return err
+	}
+
+	return s.dbRepo.SaveForApplication(ctx, app, ctrls)
 }
 
 func (s *service) Update(ctx context.Context, app *application.Application) error {

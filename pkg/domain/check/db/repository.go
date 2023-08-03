@@ -201,3 +201,28 @@ func (r *repository) FetchForApplication(ctx context.Context, app *application.A
 
 	return ctrls, nil
 }
+
+func (r *repository) SaveForApplication(ctx context.Context, app *application.Application, ctrls []check.Control) error {
+
+	qry := `insert into APP_CONTROLS (APP_ID, CHECK_ID) values (?, ?)`
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.PrepareContext(ctx, qry)
+	if err != nil {
+		return err
+	}
+
+	for _, c := range ctrls {
+		_, err := stmt.ExecContext(ctx, app.ID, c.ID)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
