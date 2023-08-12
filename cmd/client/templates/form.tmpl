@@ -244,7 +244,7 @@ $('.ui.controls.button').on('click', function(ev) {
     };
 
     var posting = $.post({
-        url: '{{.ApiURL}}/controls/', 
+        url: '{{.ApiURL}}/controls/filter/', 
         contentType: 'application/json',
         dataType: 'json',
         data: JSON.stringify(data)

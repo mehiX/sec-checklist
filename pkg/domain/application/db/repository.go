@@ -8,6 +8,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/mehix/sec-checklist/pkg/domain"
 	"github.com/mehix/sec-checklist/pkg/domain/application"
 	"github.com/mehix/sec-checklist/pkg/domain/db"
 )
@@ -27,14 +28,14 @@ func NewRepository(dsn string) application.ReaderWriter {
 	return &repository{db: db}
 }
 
-func (r *repository) FetchByID(ctx context.Context, id string) (*application.Application, error) {
+func (r *repository) FetchByID(ctx context.Context, id string) (*domain.Application, error) {
 	sql := "select * from V_APPS where ID=?"
 	row := r.db.QueryRowContext(ctx, sql, id)
 
 	return scanForApp(row)
 }
 
-func (r *repository) ListAll(ctx context.Context) ([]application.Application, error) {
+func (r *repository) ListAll(ctx context.Context) ([]domain.Application, error) {
 	qry := "select * from V_APPS"
 
 	rows, err := r.db.QueryContext(ctx, qry)
@@ -43,7 +44,7 @@ func (r *repository) ListAll(ctx context.Context) ([]application.Application, er
 	}
 	defer rows.Close()
 
-	apps := []application.Application{}
+	apps := []domain.Application{}
 	for rows.Next() {
 		app, err := scanForApp(rows)
 		if err != nil {
@@ -56,7 +57,7 @@ func (r *repository) ListAll(ctx context.Context) ([]application.Application, er
 	return apps, nil
 }
 
-func (r *repository) Save(ctx context.Context, app *application.Application) (err error) {
+func (r *repository) Save(ctx context.Context, app *domain.Application) (err error) {
 	insertApp := "insert into APPS (id, internal_id, name) values (?, ?, ?)"
 	insertAppProfile := `insert into APP_PROFILES (
 		APP_ID, only_handle_centrally,handled_centrally_by,excluded_for_external_supplier,software_development_relevant,
@@ -104,7 +105,7 @@ func (r *repository) Save(ctx context.Context, app *application.Application) (er
 	return nil
 }
 
-func (r *repository) Update(ctx context.Context, app *application.Application) (err error) {
+func (r *repository) Update(ctx context.Context, app *domain.Application) (err error) {
 	updateApp := "update APPS set name = ? where id = ?)"
 	updateAppProfile := `update APP_PROFILES set
 	 only_handle_centrally = ?,

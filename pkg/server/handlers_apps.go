@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	appDomain "github.com/mehix/sec-checklist/pkg/domain/application"
+	appDomain "github.com/mehix/sec-checklist/pkg/domain"
 	"github.com/mehix/sec-checklist/pkg/service/application"
 )
 
@@ -14,7 +14,7 @@ func listAllApps(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
 
-		apps, err := svc.ListAll(r.Context())
+		apps, err := svc.ListAllApplications(r.Context())
 		if err != nil {
 			handleError(w, err)
 			return
@@ -59,7 +59,7 @@ func saveApp(svc application.Service) http.HandlerFunc {
 
 		fmt.Printf("Request to save application: %#v\n", p)
 
-		if err := svc.Save(r.Context(), &p); err != nil {
+		if err := svc.SaveApplication(r.Context(), &p); err != nil {
 			handleError(w, err)
 			return
 		}
@@ -93,7 +93,7 @@ func updateApp(svc application.Service) http.HandlerFunc {
 
 		p.ID = app.ID
 
-		if err := svc.Update(r.Context(), &p); err != nil {
+		if err := svc.SaveApplication(r.Context(), &p); err != nil {
 			handleError(w, err)
 			return
 		}
@@ -111,7 +111,7 @@ func controlsForApp(svc application.Service) http.HandlerFunc {
 			return
 		}
 
-		ctrls, err := svc.FetchByApplication(r.Context(), app)
+		ctrls, err := svc.FetchControlsByApplication(r.Context(), app)
 		if err != nil {
 			handleError(w, err)
 			return

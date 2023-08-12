@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/mehix/sec-checklist/pkg/domain"
 	"github.com/mehix/sec-checklist/pkg/domain/application"
 	"github.com/mehix/sec-checklist/pkg/domain/check"
 )
@@ -12,10 +13,9 @@ import (
 var ErrDbNotConnected = fmt.Errorf("not connected to database")
 
 type ApplicationService interface {
-	FetchApplicationByID(context.Context, string) (*application.Application, error)
-	ListAll(context.Context) ([]application.Application, error)
-	Save(context.Context, *application.Application) error
-	Update(context.Context, *application.Application) error
+	FetchApplicationByID(context.Context, string) (*domain.Application, error)
+	ListAllApplications(context.Context) ([]domain.Application, error)
+	SaveApplication(context.Context, *domain.Application) error
 }
 
 type service struct {
@@ -32,7 +32,7 @@ func NewService(options ...Option) Service {
 	return s
 }
 
-func (s *service) FetchApplicationByID(ctx context.Context, id string) (*application.Application, error) {
+func (s *service) FetchApplicationByID(ctx context.Context, id string) (*domain.Application, error) {
 	if s.appsDbRepo == nil {
 		return nil, ErrDbNotConnected
 	}
@@ -40,7 +40,7 @@ func (s *service) FetchApplicationByID(ctx context.Context, id string) (*applica
 	return s.appsDbRepo.FetchByID(ctx, id)
 }
 
-func (s *service) ListAll(ctx context.Context) ([]application.Application, error) {
+func (s *service) ListAllApplications(ctx context.Context) ([]domain.Application, error) {
 	if s.appsDbRepo == nil {
 		return nil, ErrDbNotConnected
 	}
@@ -48,28 +48,32 @@ func (s *service) ListAll(ctx context.Context) ([]application.Application, error
 	return s.appsDbRepo.ListAll(ctx)
 }
 
-func (s *service) Save(ctx context.Context, app *application.Application) error {
+func (s *service) SaveApplication(ctx context.Context, app *domain.Application) error {
 	if s.appsDbRepo == nil {
 		return ErrDbNotConnected
 	}
 
-	app.ID = uuid.NewString()
+	if app.ID == "" {
+		app.ID = uuid.NewString()
 
-	if err := s.appsDbRepo.Save(ctx, app); err != nil {
-		return err
-	}
+		if err := s.appsDbRepo.Save(ctx, app); err != nil {
+			return err
+		}
 
-	ctrls, err := s.FetchByApplication(ctx, app)
-	if err != nil {
-		return err
-	}
+		ctrls, err := s.dbRepo.ControlsForFilter(ctx, &domain.ControlsFilter{
+			OnlyHandleCentrally:         &app.OnlyHandledCentrally,
+			HandledCentrallyBy:          &app.HandledCentrallyBy,
+			ExcludeForExternalSupplier:  &app.ExcludeForExternalSupplier,
+			SoftwareDevelopmentRelevant: &app.SoftwareDevelopmentRelevant,
+			CloudOnly:                   &app.CloudOnly,
+			PhysicalSecurityOnly:        &app.PhysicalSecurityOnly,
+			PersonalSecurityOnly:        &app.PersonalSecurityOnly,
+		})
+		if err != nil {
+			return err
+		}
 
-	return s.dbRepo.SaveForApplication(ctx, app, ctrls)
-}
-
-func (s *service) Update(ctx context.Context, app *application.Application) error {
-	if s.appsDbRepo == nil {
-		return ErrDbNotConnected
+		return s.dbRepo.SaveForApplication(ctx, app, ctrls)
 	}
 
 	return s.appsDbRepo.Update(ctx, app)

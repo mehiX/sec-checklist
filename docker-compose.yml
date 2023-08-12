@@ -13,6 +13,9 @@ services:
     - 0.0.0.0:80
     environment:
       - CHECKLISTS_DSN=test:test@tcp(db)/test
+      - IFACTS_BASEURL=${IFACTS_BASEURL}
+      - IFACTS_CLIENT_ID=${IFACTS_CLIENT_ID}
+      - IFACTS_CLIENT_SECRET=${IFACTS_CLIENT_SECRET}
     ports:
       - 8080:80
     volumes:

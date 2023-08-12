@@ -86,9 +86,11 @@ func serve() {
 
 	wg.Wait()
 
-	iFactsClient := &iFacts.Client{
-		BaseURL: "https://ifacts.corp.vattenfall.com",
-	}
+	iFactsClient := iFacts.NewClient(
+		os.Getenv("IFACTS_BASEURL"),
+		os.Getenv("IFACTS_CLIENT_ID"),
+		os.Getenv("IFACTS_CLIENT_SECRET"),
+	)
 
 	fmt.Println("Listening on", addr)
 	h := server.Handlers(svcApps, iFactsClient)
@@ -106,7 +108,7 @@ func importData() {
 	)
 
 	fmt.Printf("Read Excel file: %s\n", fromExcel)
-	ctrls, err := svc.FetchAllFromExcel()
+	ctrls, err := svc.FetchControlsFromExcel()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -115,7 +117,7 @@ func importData() {
 		fmt.Println(ctrls[0])
 	}
 
-	if err := svc.SaveAll(context.Background(), ctrls); err != nil {
+	if err := svc.SaveAllControls(context.Background(), ctrls); err != nil {
 		log.Printf("Saving checks to database: %v\n", err)
 	}
 

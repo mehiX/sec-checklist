@@ -1,15 +1,19 @@
 package application
 
-import "context"
+import (
+	"context"
+
+	"github.com/mehix/sec-checklist/pkg/domain"
+)
 
 type Reader interface {
-	FetchByID(context.Context, string) (*Application, error)
-	ListAll(context.Context) ([]Application, error)
+	FetchByID(context.Context, string) (*domain.Application, error)
+	ListAll(context.Context) ([]domain.Application, error)
 }
 
 type Writer interface {
-	Save(context.Context, *Application) error
-	Update(context.Context, *Application) error
+	Save(context.Context, *domain.Application) error
+	Update(context.Context, *domain.Application) error
 }
 
 type ReaderWriter interface {

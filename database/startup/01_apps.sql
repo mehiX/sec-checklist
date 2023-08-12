@@ -87,14 +87,14 @@ CREATE VIEW V_APPS AS
     inner join APP_PROFILES ap on a.ID = ap.APP_ID
     inner join APP_CLASSIFICATIONS ac on a.ID = ac.APP_ID;
 
-    CREATE VIEW V_APPS_CONTROLS AS
-        select
-            a.ID as app_id,
-            c.ID as check_id,
-            c.name,
-            c.description,
-            ac.is_done,
-            ac.notes
-        from APP_CONTROLS ac
-        inner join APPS a on a.ID = ac.APP_ID
-        inner join CHECKS c on c.ID = ac.CHECK_ID
+CREATE VIEW V_APPS_CONTROLS AS
+    select
+        a.ID as app_id,
+        c.ID as check_id,
+        c.name,
+        c.description,
+        ac.is_done,
+        ac.notes
+    from APP_CONTROLS ac
+    inner join APPS a on a.ID = ac.APP_ID
+    inner join CHECKS c on c.ID = ac.CHECK_ID;

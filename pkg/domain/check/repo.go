@@ -3,19 +3,20 @@ package check
 import (
 	"context"
 
-	"github.com/mehix/sec-checklist/pkg/domain/application"
+	"github.com/mehix/sec-checklist/pkg/domain"
 )
 
 type Reader interface {
-	FetchAll() ([]Control, error)
-	FetchByType(string) ([]Control, error)
-	FetchByID(context.Context, string) (Control, error)
-	FetchForApplication(context.Context, *application.Application) ([]Control, error)
+	FetchAll() ([]domain.Control, error)
+	FetchByType(string) ([]domain.Control, error)
+	FetchByID(context.Context, string) (domain.Control, error)
+	ControlsForFilter(context.Context, *domain.ControlsFilter) ([]domain.Control, error)
+	ControlsForApplication(ctx context.Context, appID string) ([]domain.AppControl, error)
 }
 
 type Writer interface {
-	SaveAll(context.Context, []Control) error
-	SaveForApplication(context.Context, *application.Application, []Control) error
+	SaveAll(context.Context, []domain.Control) error
+	SaveForApplication(context.Context, *domain.Application, []domain.Control) error
 }
 
 type ReaderWriter interface {

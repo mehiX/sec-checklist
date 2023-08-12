@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mehix/sec-checklist/pkg/domain/application"
+	"github.com/mehix/sec-checklist/pkg/domain"
 	"github.com/mehix/sec-checklist/pkg/domain/check"
 	"github.com/xuri/excelize/v2"
 )
@@ -19,17 +19,17 @@ func NewRepository(fPath, sheetName string) check.Reader {
 	return &repository{fPath: fPath, sheetName: sheetName}
 }
 
-func (r *repository) FetchByID(_ context.Context, id string) (check.Control, error) {
-	return check.Control{}, fmt.Errorf("not implemented")
+func (r *repository) FetchByID(_ context.Context, id string) (domain.Control, error) {
+	return domain.Control{}, fmt.Errorf("not implemented")
 }
 
-func (r *repository) FetchByType(t string) ([]check.Control, error) {
+func (r *repository) FetchByType(t string) ([]domain.Control, error) {
 	all, err := r.FetchAll()
 	if err != nil {
 		return nil, err
 	}
 
-	var byType []check.Control
+	var byType []domain.Control
 	for _, c := range all {
 		if c.Type == t {
 			byType = append(byType, c)
@@ -39,7 +39,7 @@ func (r *repository) FetchByType(t string) ([]check.Control, error) {
 	return byType, nil
 }
 
-func (r *repository) FetchAll() ([]check.Control, error) {
+func (r *repository) FetchAll() ([]domain.Control, error) {
 	f, err := excelize.OpenFile(r.fPath)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (r *repository) FetchAll() ([]check.Control, error) {
 	}
 
 	counter := 0
-	controls := make([]check.Control, 0)
+	controls := make([]domain.Control, 0)
 	for rows.Next() {
 		if counter == 0 {
 			//header row
@@ -79,16 +79,20 @@ func (r *repository) FetchAll() ([]check.Control, error) {
 	return controls, nil
 }
 
-func (r *repository) FetchForApplication(ctx context.Context, app *application.Application) ([]check.Control, error) {
+func (r *repository) ControlsForFilter(ctx context.Context, app *domain.ControlsFilter) ([]domain.Control, error) {
 	return nil, fmt.Errorf("not supported")
 }
 
-func fromRowData(row []string) check.Control {
+func (r *repository) ControlsForApplication(context.Context, string) ([]domain.AppControl, error) {
+	return nil, fmt.Errorf("not supported")
+}
+
+func fromRowData(row []string) domain.Control {
 	// some rows may have less columns filled with data
 	cols := make([]string, 30)
 	copy(cols, row)
 
-	entry := check.Control{
+	entry := domain.Control{
 		Type: strings.TrimSpace(cols[0]),
 		ID:   strings.TrimSpace(cols[1]),
 		Name: strings.TrimSpace(cols[2]),

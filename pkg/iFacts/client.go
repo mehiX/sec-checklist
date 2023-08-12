@@ -8,14 +8,97 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"sync"
+	"time"
 )
 
-type Client struct {
-	BaseURL     string
-	CookieToken string
+type Client interface {
+	SearchByName(name string, f func(*http.Response) error) error
 }
 
-func (c *Client) Request(method, endPoint string, body io.Reader, f func(*http.Response) error) error {
+type client struct {
+	BaseURL      string
+	CookieToken  string
+	clientID     string
+	clientSecret string
+
+	m                  *sync.Mutex // protect the token
+	token              string
+	tokenLastRequested time.Time
+}
+
+var tokenLifespan = time.Minute
+
+func NewClient(baseURL, clientID, secret string) Client {
+	fmt.Printf("iFacts client for %s [%s]\n", baseURL, clientID)
+	return &client{
+		BaseURL:      baseURL,
+		clientID:     clientID,
+		clientSecret: secret,
+		m:            new(sync.Mutex),
+	}
+}
+
+func (c *client) getToken() string {
+
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	if c.token != "" && time.Since(c.tokenLastRequested) <= tokenLifespan {
+		return c.token
+	}
+
+	c.tokenLastRequested = time.Now()
+
+	tkn, err := c.requestToken()
+	if err != nil {
+		c.token = ""
+		log.Println(err)
+	} else {
+		c.token = tkn
+	}
+
+	return c.token
+}
+
+func (c *client) requestToken() (string, error) {
+
+	payload := struct {
+		GrantType    string `json:"grant_type"`
+		ClientID     string `json:"client_id"`
+		ClientSecret string `json:"client_secret"`
+	}{
+		GrantType:    "client_credentials",
+		ClientID:     c.clientID,
+		ClientSecret: c.clientSecret,
+	}
+
+	b, _ := json.Marshal(payload)
+
+	resp, err := http.Post(c.BaseURL+"/idp/connect/token", "application/json", bytes.NewReader(b))
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	b, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	tokenResp := struct {
+		AccessToken string `json:"access_token"`
+	}{}
+	if err := json.Unmarshal(b, &tokenResp); err != nil {
+		return "", fmt.Errorf("iFacts auth response: %s", string(b))
+	}
+
+	return tokenResp.AccessToken, nil
+}
+
+func (c *client) request(method, endPoint string, body io.Reader, f func(*http.Response) error) error {
+
+	tkn := c.getToken()
 
 	url := fmt.Sprintf("%s%s", c.BaseURL, endPoint)
 	fmt.Printf("Forward request to iFacts: %s\n", url)
@@ -24,7 +107,8 @@ func (c *Client) Request(method, endPoint string, body io.Reader, f func(*http.R
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Cookie", c.CookieToken)
+	//req.Header.Set("Cookie", c.CookieToken)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tkn))
 	req.Header.Set("Content-type", "application/json-patch+json")
 	req.Header.Set("Accept", "text/plain")
 
@@ -47,23 +131,25 @@ func (c *Client) Request(method, endPoint string, body io.Reader, f func(*http.R
 	return err
 }
 
-func (c *Client) SearchByName(name string, f func(*http.Response) error) error {
+func (c *client) SearchByName(name string, f func(*http.Response) error) error {
 
 	type bodyT struct {
-		AssetName string `json:"assetName"`
+		AssetName                    string `json:"assetName"`
+		IncludeInactiveOrganizations bool   `json:"includeInactiveOrganizations"`
 	}
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(bodyT{
-		AssetName: name,
+		AssetName:                    name,
+		IncludeInactiveOrganizations: false,
 	}); err != nil {
 		return err
 	}
 
-	return c.Request(http.MethodPost, "/api/v1/assets/search", &body, f)
+	return c.request(http.MethodPost, "/api/v1/assets/search", &body, f)
 }
 
-func (c *Client) AssetGeneralSection(id string, f func(*http.Response) error) error {
+func (c *client) AssetGeneralSection(id string, f func(*http.Response) error) error {
 
-	return c.Request(http.MethodGet, fmt.Sprintf("/api/v1/assets/getgeneralsection/%s", id), nil, f)
+	return c.request(http.MethodGet, fmt.Sprintf("/api/v1/assets/getgeneralsection/%s", id), nil, f)
 }

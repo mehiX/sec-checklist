@@ -1,13 +1,15 @@
 package db
 
-import "github.com/mehix/sec-checklist/pkg/domain/application"
+import (
+	"github.com/mehix/sec-checklist/pkg/domain"
+)
 
 // Scanner used as constraint for `scanForControl`
 type Scanner interface {
 	Scan(...any) error
 }
 
-func scanForApp[T Scanner](s T) (*application.Application, error) {
+func scanForApp[T Scanner](s T) (*domain.Application, error) {
 
 	var id, name, handledCentrallyBy string
 	var internalID int
@@ -27,7 +29,7 @@ func scanForApp[T Scanner](s T) (*application.Application, error) {
 		return nil, err
 	}
 
-	return &application.Application{
+	return &domain.Application{
 		ID:                          id,
 		Name:                        name,
 		InternalID:                  internalID,

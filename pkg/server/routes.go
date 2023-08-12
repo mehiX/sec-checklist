@@ -10,12 +10,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/mehix/sec-checklist/pkg/domain/check"
+	"github.com/mehix/sec-checklist/pkg/domain"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
 	"github.com/mehix/sec-checklist/pkg/service/application"
 )
 
-func Handlers(svcApps application.Service, iFactsClient *iFacts.Client) http.Handler {
+func Handlers(svcApps application.Service, iFactsClient iFacts.Client) http.Handler {
 	r := chi.NewMux()
 
 	r.Use(middleware.Logger)
@@ -46,18 +46,18 @@ func Handlers(svcApps application.Service, iFactsClient *iFacts.Client) http.Han
 			r.Put("/", updateApp(svcApps))
 			r.Get("/controls", controlsForApp(svcApps))
 		})
-		r.Get("/search/remote", searchAppByNameRemote(iFactsClient))
+		r.Get("/search/remote", searchIFactsAppByName(iFactsClient))
 	})
 
 	r.Route("/controls", func(r chi.Router) {
 		r.Get("/", showAll(svcApps))
-		r.Post("/", showFiltered(svcApps))
+		r.Post("/filter/", showFiltered(svcApps))
 		r.Get("/{id:[0-9.]+}", showOneControl(svcApps))
 	})
 
-	r.Post("/ifacts/config", configIFactsClient(iFactsClient))
+	//r.Post("/ifacts/config", configIFactsClient(iFactsClient))
 	// forward a request to iFacts and return the result
-	r.Method(http.MethodGet, "/ifacts/*", http.StripPrefix("/ifacts", http.HandlerFunc(forwardGetToIFacts(iFactsClient))))
+	//r.Method(http.MethodGet, "/ifacts/*", http.StripPrefix("/ifacts", http.HandlerFunc(forwardGetToIFacts(iFactsClient))))
 
 	r.Get("/docs/controls/filter", showFiltered(svcApps))
 
@@ -105,7 +105,7 @@ func showAll(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
 
-		all, err := svc.FetchAll()
+		all, err := svc.FetchAllControls()
 		if err != nil {
 			handleError(w, err)
 			return
@@ -119,23 +119,13 @@ func showAll(svc application.Service) http.HandlerFunc {
 
 func showFiltered(svc application.Service) http.HandlerFunc {
 
-	type filter struct {
-		OnlyHandleCentrally         *bool   `json:"only_handle_centrally,omitempty"`
-		HandledCentrallyBy          *string `json:"handled_centrally_by,omitempty"`
-		ExcludeForExternalSupplier  *bool   `json:"exclude_for_external_supplier,omitempty"`
-		SoftwareDevelopmentRelevant *bool   `json:"software_development_relevant,omitempty"`
-		CloudOnly                   *bool   `json:"cloud_only,omitempty"`
-		PhysicalSecurityOnly        *bool   `json:"physical_security_only,omitempty"`
-		PersonalSecurityOnly        *bool   `json:"personal_security_only,omitempty"`
-	}
-
 	exampleFilter := func(w http.ResponseWriter) {
 		t := true
 		s := "BSO"
 		json.NewEncoder(w).Encode(struct {
-			Req  filter          `json:"Request body example"`
-			Resp []check.Control `json:"Response example"`
-		}{Req: filter{
+			Req  domain.ControlsFilter `json:"Request body example"`
+			Resp []domain.Control      `json:"Response example"`
+		}{Req: domain.ControlsFilter{
 			OnlyHandleCentrally:         &t,
 			HandledCentrallyBy:          &s,
 			ExcludeForExternalSupplier:  &t,
@@ -144,7 +134,7 @@ func showFiltered(svc application.Service) http.HandlerFunc {
 			PhysicalSecurityOnly:        &t,
 			PersonalSecurityOnly:        &t,
 		},
-			Resp: []check.Control{{}}})
+			Resp: []domain.Control{{}}})
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -156,19 +146,19 @@ func showFiltered(svc application.Service) http.HandlerFunc {
 			return
 		}
 
-		var payload filter
+		var payload domain.ControlsFilter
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 			handleError(w, err)
 			return
 		}
 
 		// TODO: move the filter to the service
-		all, err := svc.FetchAll()
+		all, err := svc.FetchAllControls()
 		if err != nil {
 			handleError(w, err)
 			return
 		}
-		var filtered []check.Control
+		var filtered []domain.Control
 		for _, c := range all {
 			if payload.OnlyHandleCentrally != nil && *payload.OnlyHandleCentrally != c.OnlyHandledCentrally {
 				continue

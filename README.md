@@ -13,6 +13,10 @@ Create the environment file (replace the values with the correct ones for your e
 cat > .env <<EOF
 EXCEL_PATH=/data/ISMS1042_VIT_v0.04.xlsx
 SHEET_NAME='ISMS1042 6.2 with all labels'
+
+IFACTS_BASEURL=https://ifacts.corp.vattenfall.com
+IFACTS_CLIENT_ID=
+IFACTS_CLIENT_SECRET=
 EOF
 ```
 
@@ -33,11 +37,15 @@ Needs:
 - go >= 1.18
 - `docker compose` to start the database or access to a MariaDB/Mysql instance
 
-Create `.env` by providing your database connection credentials:
+Create `.env` by providing your database connection credentials and connection details for iFacts:
 
 ```shell
 cat > .env <<EOF
 CHECKLISTS_DSN=test:test@tcp(127.0.0.1)/test
+
+IFACTS_BASEURL=https://ifacts.corp.vattenfall.com
+IFACTS_CLIENT_ID=
+IFACTS_CLIENT_SECRET=
 EOF
 ```
 

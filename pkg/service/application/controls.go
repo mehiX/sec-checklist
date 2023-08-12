@@ -4,62 +4,61 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mehix/sec-checklist/pkg/domain/application"
-	"github.com/mehix/sec-checklist/pkg/domain/check"
+	"github.com/mehix/sec-checklist/pkg/domain"
 )
 
 var ErrNoDb = fmt.Errorf("not connected to a database")
 var ErrNoExcel = fmt.Errorf("no Excel file specified")
 
 type ControlsService interface {
-	FetchAllFromExcel() ([]check.Control, error)
-	FetchAll() ([]check.Control, error)
-	FetchByType(string) ([]check.Control, error)
-	FetchControlByID(context.Context, string) (check.Control, error)
-	SaveAll(context.Context, []check.Control) error
+	FetchControlsFromExcel() ([]domain.Control, error)
+	FetchAllControls() ([]domain.Control, error)
+	FetchControlsByType(string) ([]domain.Control, error)
+	FetchControlByID(context.Context, string) (domain.Control, error)
+	SaveAllControls(context.Context, []domain.Control) error
 
-	FetchByApplication(context.Context, *application.Application) ([]check.Control, error)
+	FetchControlsByApplication(context.Context, *domain.Application) ([]domain.AppControl, error)
 }
 
-func (s *service) FetchAllFromExcel() ([]check.Control, error) {
+func (s *service) FetchControlsFromExcel() ([]domain.Control, error) {
 	if s.xlsRepo == nil {
 		return nil, ErrNoExcel
 	}
 	return s.xlsRepo.FetchAll()
 }
 
-func (s *service) FetchAll() ([]check.Control, error) {
+func (s *service) FetchAllControls() ([]domain.Control, error) {
 	if s.dbRepo == nil {
 		return nil, ErrNoDb
 	}
 	return s.dbRepo.FetchAll()
 }
 
-func (s *service) FetchByType(t string) ([]check.Control, error) {
+func (s *service) FetchControlsByType(t string) ([]domain.Control, error) {
 	if s.dbRepo == nil {
 		return nil, ErrNoDb
 	}
 	return s.dbRepo.FetchByType(t)
 }
 
-func (s *service) SaveAll(ctx context.Context, all []check.Control) error {
+func (s *service) SaveAllControls(ctx context.Context, all []domain.Control) error {
 	if s.dbRepo == nil {
 		return ErrNoDb
 	}
 	return s.dbRepo.SaveAll(ctx, all)
 }
 
-func (s *service) FetchControlByID(ctx context.Context, id string) (check.Control, error) {
+func (s *service) FetchControlByID(ctx context.Context, id string) (domain.Control, error) {
 	if s.dbRepo == nil {
-		return check.Control{}, ErrNoDb
+		return domain.Control{}, ErrNoDb
 	}
 	return s.dbRepo.FetchByID(ctx, id)
 }
 
-func (s *service) FetchByApplication(ctx context.Context, app *application.Application) ([]check.Control, error) {
+func (s *service) FetchControlsByApplication(ctx context.Context, app *domain.Application) ([]domain.AppControl, error) {
 	if s.dbRepo == nil {
 		return nil, ErrNoDb
 	}
 
-	return s.dbRepo.FetchForApplication(ctx, app)
+	return s.dbRepo.ControlsForApplication(ctx, app.ID)
 }

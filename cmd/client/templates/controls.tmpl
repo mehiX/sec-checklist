@@ -1,7 +1,7 @@
 {{ define "controls" }}
     <p><a href="/apps">&lt; All apps</a></p>
     <h2 class="ui header title">Show template for app {{ .SelectedAppID }}</h2>
-    <div class="ui list" id="results"></div>
+    <div class="ui middle aligned divided list" id="results"></div>
 
     <script>
     function showAppMetadata() {
@@ -41,10 +41,16 @@
             }
 
             $.each(data, function(index, element) {
-                $('#results').append($('<div>', {
-                    text: element.ID + "-" + element.Name,
+                content = $('<div>', {
+                    class: "content",
+                    text: element.ID + "-" + element.Name 
+                });
+                item = $('<div>', {
                     class: "item"
-                }));
+                });
+                item.append(content);
+                
+                $('#results').append(item);
             });
             console.log(data);
         });

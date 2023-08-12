@@ -8,7 +8,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/mehix/sec-checklist/pkg/domain/application"
+	"github.com/mehix/sec-checklist/pkg/domain"
 	"github.com/mehix/sec-checklist/pkg/domain/check"
 	"github.com/mehix/sec-checklist/pkg/domain/db"
 )
@@ -28,7 +28,7 @@ func NewRepository(dsn string) check.ReaderWriter {
 	return &repository{db: db}
 }
 
-func (r *repository) FetchAll() ([]check.Control, error) {
+func (r *repository) FetchAll() ([]domain.Control, error) {
 	qry := "select * from V_CHECKS"
 
 	rows, err := r.db.QueryContext(context.TODO(), qry)
@@ -37,7 +37,7 @@ func (r *repository) FetchAll() ([]check.Control, error) {
 	}
 	defer rows.Close()
 
-	var ctrls []check.Control
+	var ctrls []domain.Control
 	for rows.Next() {
 		ctrl, err := scanForControl(rows)
 		if err != nil {
@@ -50,16 +50,16 @@ func (r *repository) FetchAll() ([]check.Control, error) {
 	return ctrls, nil
 
 }
-func (r *repository) FetchByType(t string) ([]check.Control, error) { return nil, nil }
+func (r *repository) FetchByType(t string) ([]domain.Control, error) { return nil, nil }
 
-func (r *repository) FetchByID(ctx context.Context, id string) (check.Control, error) {
+func (r *repository) FetchByID(ctx context.Context, id string) (domain.Control, error) {
 	qry := "select * from V_CHECKS where ID = ?"
 
 	row := r.db.QueryRowContext(ctx, qry, id)
 	return scanForControl(row)
 }
 
-func (r *repository) SaveAll(ctx context.Context, all []check.Control) (err error) {
+func (r *repository) SaveAll(ctx context.Context, all []domain.Control) (err error) {
 	qry := "insert into CHECKS (ID, type, name, description,asset_type,last_update,old_id) values (?, ?, ?, ?, ?, ?, ?)"
 	qryCiat := "insert CHECKS_CIAT (CHECK_ID, c, i, a, t) values (?, ?, ?, ?, ?)"
 	qryFilters := `insert FILTERS (CHECK_ID, only_handle_centrally, 
@@ -150,37 +150,37 @@ func (r *repository) SaveAll(ctx context.Context, all []check.Control) (err erro
 	return nil
 }
 
-func (r *repository) FetchForApplication(ctx context.Context, app *application.Application) ([]check.Control, error) {
+func (r *repository) ControlsForFilter(ctx context.Context, filter *domain.ControlsFilter) ([]domain.Control, error) {
 	qry := "select * from V_CHECKS where 1=1"
 	args := make([]any, 0)
 
-	if app.OnlyHandledCentrally {
+	if filter.OnlyHandleCentrally != nil {
 		qry += " AND only_handle_centrally = ?"
-		args = append(args, app.OnlyHandledCentrally)
+		args = append(args, *filter.OnlyHandleCentrally)
 	}
-	if app.HandledCentrallyBy != "" {
+	if filter.HandledCentrallyBy != nil && *filter.HandledCentrallyBy != "" {
 		qry += " AND handled_centrally_by = ?"
-		args = append(args, app.HandledCentrallyBy)
+		args = append(args, *filter.HandledCentrallyBy)
 	}
-	if app.ExcludeForExternalSupplier {
+	if filter.ExcludeForExternalSupplier != nil {
 		qry += " AND excluded_for_external_supplier = ?"
-		args = append(args, app.ExcludeForExternalSupplier)
+		args = append(args, *filter.ExcludeForExternalSupplier)
 	}
-	if app.SoftwareDevelopmentRelevant {
+	if filter.SoftwareDevelopmentRelevant != nil {
 		qry += " AND software_development_relevant = ?"
-		args = append(args, app.SoftwareDevelopmentRelevant)
+		args = append(args, *filter.SoftwareDevelopmentRelevant)
 	}
-	if app.CloudOnly {
+	if filter.CloudOnly != nil {
 		qry += " AND cloud_only = ?"
-		args = append(args, app.CloudOnly)
+		args = append(args, *filter.CloudOnly)
 	}
-	if app.PhysicalSecurityOnly {
+	if filter.PhysicalSecurityOnly != nil {
 		qry += " AND physical_security_only = ?"
-		args = append(args, app.PhysicalSecurityOnly)
+		args = append(args, *filter.PhysicalSecurityOnly)
 	}
-	if app.PersonalSecurityOnly {
+	if filter.PersonalSecurityOnly != nil {
 		qry += " AND personal_security_only = ?"
-		args = append(args, app.PersonalSecurityOnly)
+		args = append(args, *filter.PersonalSecurityOnly)
 	}
 
 	rows, err := r.db.QueryContext(ctx, qry, args...)
@@ -189,7 +189,7 @@ func (r *repository) FetchForApplication(ctx context.Context, app *application.A
 	}
 	defer rows.Close()
 
-	var ctrls []check.Control
+	var ctrls []domain.Control
 	for rows.Next() {
 		ctrl, err := scanForControl(rows)
 		if err != nil {
@@ -202,7 +202,41 @@ func (r *repository) FetchForApplication(ctx context.Context, app *application.A
 	return ctrls, nil
 }
 
-func (r *repository) SaveForApplication(ctx context.Context, app *application.Application, ctrls []check.Control) error {
+func (r *repository) ControlsForApplication(ctx context.Context, appID string) ([]domain.AppControl, error) {
+
+	qry := `select * from V_APPS_CONTROLS where app_id = ?`
+
+	rows, err := r.db.QueryContext(ctx, qry, appID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ctrls []domain.AppControl
+	for rows.Next() {
+		var appId, checkId, name, desc, notes string
+		var isDone bool
+
+		err := rows.Scan(&appId, &checkId, &name, &desc, &isDone, &notes)
+		if err != nil {
+			log.Printf("Scanning for control from v_apps_controls: %v\n", err)
+			continue
+		}
+		ctrls = append(ctrls, domain.AppControl{
+			AppID:       appId,
+			ControlID:   checkId,
+			Name:        name,
+			Description: desc,
+			IsDone:      isDone,
+			Notes:       notes,
+		})
+	}
+
+	return ctrls, nil
+}
+
+func (r *repository) SaveForApplication(ctx context.Context, app *domain.Application, ctrls []domain.Control) error {
 
 	qry := `insert into APP_CONTROLS (APP_ID, CHECK_ID) values (?, ?)`
 
