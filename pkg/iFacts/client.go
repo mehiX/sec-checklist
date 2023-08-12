@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 	"sync"
 	"time"
 )
@@ -27,7 +28,7 @@ type client struct {
 	tokenLastRequested time.Time
 }
 
-var tokenLifespan = time.Minute
+var tokenLifespan = time.Hour
 
 func NewClient(baseURL, clientID, secret string) Client {
 	fmt.Printf("iFacts client for %s [%s]\n", baseURL, clientID)
@@ -63,34 +64,32 @@ func (c *client) getToken() string {
 
 func (c *client) requestToken() (string, error) {
 
-	payload := struct {
-		GrantType    string `json:"grant_type"`
-		ClientID     string `json:"client_id"`
-		ClientSecret string `json:"client_secret"`
-	}{
-		GrantType:    "client_credentials",
-		ClientID:     c.clientID,
-		ClientSecret: c.clientSecret,
-	}
+	fmt.Println("Requesting new token")
 
-	b, _ := json.Marshal(payload)
+	b := fmt.Sprintf("grant_type=%s&client_id=%s&client_secret=%s", "client_credentials", c.clientID, c.clientSecret)
 
-	resp, err := http.Post(c.BaseURL+"/idp/connect/token", "application/json", bytes.NewReader(b))
+	resp, err := http.Post(c.BaseURL+"/idp/connect/token", "application/x-www-form-urlencoded", strings.NewReader(b))
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
 
-	b, err = io.ReadAll(resp.Body)
+	bdy, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
 
 	tokenResp := struct {
 		AccessToken string `json:"access_token"`
+		ExpiresIn   int64  `json:"expires_in"`
+		Error       string `json:"error"`
 	}{}
-	if err := json.Unmarshal(b, &tokenResp); err != nil {
+	if err := json.Unmarshal(bdy, &tokenResp); err != nil || tokenResp.Error != "" {
 		return "", fmt.Errorf("iFacts auth response: %s", string(b))
+	}
+
+	if tokenResp.ExpiresIn != 0 {
+		tokenLifespan = time.Duration(tokenResp.ExpiresIn) * time.Second
 	}
 
 	return tokenResp.AccessToken, nil
