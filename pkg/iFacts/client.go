@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -26,17 +27,17 @@ type client struct {
 	m                  *sync.Mutex // protect the token
 	token              string
 	tokenLastRequested time.Time
+	tokenLifespan      time.Duration
 }
-
-var tokenLifespan = time.Hour
 
 func NewClient(baseURL, clientID, secret string) Client {
 	fmt.Printf("iFacts client for %s [%s]\n", baseURL, clientID)
 	return &client{
-		BaseURL:      baseURL,
-		clientID:     clientID,
-		clientSecret: secret,
-		m:            new(sync.Mutex),
+		BaseURL:       baseURL,
+		clientID:      clientID,
+		clientSecret:  secret,
+		m:             new(sync.Mutex),
+		tokenLifespan: time.Hour,
 	}
 }
 
@@ -45,7 +46,7 @@ func (c *client) getToken() string {
 	c.m.Lock()
 	defer c.m.Unlock()
 
-	if c.token != "" && time.Since(c.tokenLastRequested) <= tokenLifespan {
+	if c.token != "" && time.Since(c.tokenLastRequested) <= c.tokenLifespan {
 		return c.token
 	}
 
@@ -66,9 +67,14 @@ func (c *client) requestToken() (string, error) {
 
 	fmt.Println("Requesting new token")
 
-	b := fmt.Sprintf("grant_type=%s&client_id=%s&client_secret=%s", "client_credentials", c.clientID, c.clientSecret)
+	data := url.Values{}
+	data.Set("grant_type", "client_credentials")
+	data.Set("client_id", c.clientID)
+	data.Set("client_credentials", c.clientSecret)
 
-	resp, err := http.Post(c.BaseURL+"/idp/connect/token", "application/x-www-form-urlencoded", strings.NewReader(b))
+	enc := "application/x-www-form-urlencoded"
+
+	resp, err := http.Post(c.BaseURL+"/idp/connect/token", enc, strings.NewReader(data.Encode()))
 	if err != nil {
 		return "", err
 	}
@@ -85,11 +91,11 @@ func (c *client) requestToken() (string, error) {
 		Error       string `json:"error"`
 	}{}
 	if err := json.Unmarshal(bdy, &tokenResp); err != nil || tokenResp.Error != "" {
-		return "", fmt.Errorf("iFacts auth response: %s", string(b))
+		return "", fmt.Errorf("iFacts auth response: %s", string(bdy))
 	}
 
 	if tokenResp.ExpiresIn != 0 {
-		tokenLifespan = time.Duration(tokenResp.ExpiresIn) * time.Second
+		c.tokenLifespan = time.Duration(tokenResp.ExpiresIn) * time.Second
 	}
 
 	return tokenResp.AccessToken, nil
@@ -108,8 +114,8 @@ func (c *client) request(method, endPoint string, body io.Reader, f func(*http.R
 	}
 	//req.Header.Set("Cookie", c.CookieToken)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tkn))
-	req.Header.Set("Content-type", "application/json-patch+json")
-	req.Header.Set("Accept", "text/plain")
+	req.Header.Set("Content-type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
