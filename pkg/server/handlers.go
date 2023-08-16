@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -40,17 +41,14 @@ func getIFactsClassifications(ifc iFacts.Client) http.HandlerFunc {
 
 		iFactsID := chi.URLParam(r, "iFactsID")
 
-		cpResp := func(resp *http.Response) error {
-			if resp.StatusCode != http.StatusOK {
-				return fmt.Errorf("iFacts response: %s", resp.Status)
-			}
-
-			_, err := io.Copy(w, resp.Body)
-			return err
+		classifications, err := ifc.GetClassifications(iFactsID)
+		if err != nil {
+			handleError(w, err)
+			return
 		}
 
-		w.Header().Set("Content-Type", "application/json-patch+json")
-		if err := ifc.GetClassifications(iFactsID, cpResp); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(classifications); err != nil {
 			handleError(w, err)
 		}
 

@@ -74,3 +74,10 @@ type AppControl struct {
 	IsDone      bool
 	Notes       string
 }
+
+type Classification struct {
+	ID        string `json:"ClassificationId"`
+	Name      string `json:"ClassificationName"`
+	LevelID   string `json:"SavedLevelId"`
+	LevelName string `json:"SavedLevelName"`
+}

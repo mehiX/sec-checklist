@@ -12,11 +12,13 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/mehix/sec-checklist/pkg/domain"
 )
 
 type Client interface {
 	SearchByName(name string, f func(*http.Response) error) error
-	GetClassifications(id string, f func(*http.Response) error) error
+	GetClassifications(id string) ([]domain.Classification, error)
 }
 
 type client struct {
@@ -71,7 +73,7 @@ func (c *client) requestToken() (string, error) {
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
 	data.Set("client_id", c.clientID)
-	data.Set("client_credentials", c.clientSecret)
+	data.Set("client_secret", c.clientSecret)
 
 	enc := "application/x-www-form-urlencoded"
 
@@ -155,7 +157,26 @@ func (c *client) SearchByName(name string, f func(*http.Response) error) error {
 	return c.request(http.MethodPost, "/api/v1/assets/search", &body, f)
 }
 
-func (c *client) GetClassifications(id string, f func(*http.Response) error) error {
+func (c *client) GetClassifications(id string) ([]domain.Classification, error) {
 
-	return c.request(http.MethodGet, fmt.Sprintf("/api/v1/assets/getclassifications/%s", id), nil, f)
+	var classifications []domain.Classification
+
+	readClassifications := func(resp *http.Response) error {
+		respData := struct {
+			Classifications []domain.Classification `json:"Classifications"`
+		}{}
+		if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
+			return err
+		}
+
+		classifications = respData.Classifications
+
+		return nil
+	}
+
+	if err := c.request(http.MethodGet, fmt.Sprintf("/api/v1/assets/getclassifications/%s", id), nil, readClassifications); err != nil {
+		return nil, err
+	}
+
+	return classifications, nil
 }
