@@ -16,6 +16,7 @@ import (
 
 type Client interface {
 	SearchByName(name string, f func(*http.Response) error) error
+	GetClassifications(id string, f func(*http.Response) error) error
 }
 
 type client struct {
@@ -154,7 +155,7 @@ func (c *client) SearchByName(name string, f func(*http.Response) error) error {
 	return c.request(http.MethodPost, "/api/v1/assets/search", &body, f)
 }
 
-func (c *client) AssetGeneralSection(id string, f func(*http.Response) error) error {
+func (c *client) GetClassifications(id string, f func(*http.Response) error) error {
 
-	return c.request(http.MethodGet, fmt.Sprintf("/api/v1/assets/getgeneralsection/%s", id), nil, f)
+	return c.request(http.MethodGet, fmt.Sprintf("/api/v1/assets/getclassifications/%s", id), nil, f)
 }

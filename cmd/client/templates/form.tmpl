@@ -138,7 +138,7 @@
 $(".ui.search")
     .search({
     apiSettings: {
-      url: '{{.ApiURL}}/apps/search/remote?q={query}',
+      url: '{{.ApiURL}}/apps/iFacts/search?q={query}',
       onResponse: function(remoteResp) {
         var response = { results: []};
         var maxResults = 8;
@@ -164,7 +164,7 @@ $(".ui.search")
         $("#appID").val(result.appId);
 
         var fromIFactsGenSection = $.get({
-            url:'{{.ApiURL}}/ifacts/api/v1/assets/getgeneralsection/'+result.all.Id,
+            url:'{{.ApiURL}}/apps/iFacts/classifications/'+result.all.Id,
             contentType: 'application/json',
             dataType: 'json',
             complete: function(data) {
