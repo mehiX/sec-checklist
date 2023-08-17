@@ -175,21 +175,22 @@ $(".ui.search")
         fromIFactsGenSection.done(function(data) {
             classif = $("#classification");
             classif.html("");
-            classif.append($("<p>", {
-                text: 'Description: ' + data.Description
-            }));
-            classif.append($("<p>", {
-                text: 'C: ' + data.Confidentiality
-            }));
-            classif.append($("<p>", {
-                text: 'I: ' + data.Integrity
-            }));
-            classif.append($("<p>", {
-                text: 'A: ' + data.Availability
-            }));
-            classif.append($("<p>", {
-                text: 'T: ' + data.Traceability
-            }));
+
+            if (!data) {
+                alert ("Could not fetch classifications");
+                return false;
+            }
+
+            if (data.Error) {
+                alert("Error fetching classifications: " + data.Error);
+                return false;
+            }
+
+            $.each(data, function(idx, elem) {
+                classif.append($("<p>", {
+                    text: elem.ClassificationName + ': ' + elem.SavedLevelName
+                }));
+            });
         });
 
         return true;
