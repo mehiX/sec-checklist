@@ -1,0 +1,154 @@
+{{ define "chooseFilters" }}
+
+<div class="ui ordered fluid steps">
+    <div class="completed step">
+        <div class="content">
+        <div class="title">Application</div>
+        <div class="description">Choose application</div>
+        </div>
+    </div>
+    <div class="active step">
+        <div class="content">
+        <div class="title">Filters</div>
+        <div class="description">Choose filters</div>
+        </div>
+    </div>
+    <div class="step">
+        <div class="content">
+        <div class="title">Controls</div>
+        <div class="description">View matching controls</div>
+        </div>
+    </div>
+</div>
+
+<form class="ui form">
+    <div class="ui vertical segment">
+        <h4 class="ui header">General or specific  controls for specific roles (handled centraly only, not for system/data owners)?</h4>
+        <div class="field">
+            <div class="ui toggle checkbox">
+                <input type="checkbox" name="centralOnly" id="centralOnly" tabindex="0" class="hidden">
+            </div>
+        </div>
+    </div>
+    <div class="ui vertical segment">
+        <div class="field">
+            Owner of central controls is
+            <div class="ui inline scrolling dropdown">
+                <input type="hidden" name="ownerCentralOnly" id="ownerCentralOnly" value="IT SPO">
+                <div class="text">IT SPO</div>
+                <i class="dropdown icon"></i>
+                <div class="menu">
+                    <div class="item" data-value="IT SPO">IT SPO</div>
+                    <div class="item" data-value="IT BISO">IT BISO</div>
+                    <div class="item" data-value="IT BCO">IT BCO</div>
+                    <div class="item" data-value="IT Managers">IT Managers</div>
+                    <div class="item" data-value="IT Asset Manager">IT Asset Manager</div>
+                    <div class="item" data-value="CAR CA45">CAR CA45</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui vertical segment">
+        <h4 class="ui header">Exclude controls for only external supplier?</h4>
+        <div class="field">
+            <div class="ui toggle checkbox">
+                <input type="checkbox" name="onlyExternalSupplier" id="onlyExternalSupplier" tabindex="0" class="hidden">
+            </div>
+        </div>
+    </div>
+    <div class="ui vertical segment">
+        <h4 class="ui header">Software development relevant?</h4>
+        <div class="field">
+            <div class="ui toggle checkbox">
+                <input type="checkbox" name="softwareDev" id="softwareDev" tabindex="0" class="hidden">
+            </div>
+        </div>
+    </div>
+    <div class="ui vertical segment">
+        <h4 class="ui header">Cloud only?</h4>
+        <div class="field">
+            <div class="ui toggle checkbox">
+                <input type="checkbox" name="cloudOnly" id="cloudOnly" tabindex="0" class="hidden">
+            </div>
+        </div>
+    </div>
+    <div class="ui vertical segment">
+        <h4 class="ui header">Physical security only?</h4>
+        <div class="field">
+            <div class="ui toggle checkbox">
+                <input type="checkbox" name="physicalSecOnly" id="physicalSecOnly" tabindex="0" class="hidden">
+            </div>
+        </div>
+    </div>
+    <div class="ui vertical segment">
+        <h4 class="ui header">Personal security only?</h4>
+        <div class="field">
+            <div class="ui toggle checkbox">
+                <input type="checkbox" name="persSecOnly" id="persSecOnly" tabindex="0" class="hidden">
+            </div>
+        </div>
+    </div>
+    <div class="ui vertical clear segment">
+        <div class="ui save right floated button" tabindex="0">Next &gt;</div>
+    </div>
+</form>
+<script>
+$('.ui.inline.dropdown')
+  .dropdown({
+    clearable: true
+    })
+;
+$('.ui.checkbox')
+  .checkbox()
+;
+
+$('.ui.save.button').on('click', function(event) {
+    event.preventDefault();
+
+    // TODO validate input
+
+    var data = {
+      only_handle_centrally: isChecked("centralOnly"),
+      handled_centrally_by: $("#ownerCentralOnly").val(),
+      exclude_for_external_supplier: isChecked("onlyExternalSupplier"),
+      software_development_relevant: isChecked("softwareDev"),
+      cloud_only: isChecked("cloudOnly"),
+      physical_security_only: isChecked("physicalSecOnly"),
+      personal_security_only: isChecked("persSecOnly"),
+    };
+
+    var posting = $.post({
+        url: '{{.ApiURL}}/apps/{{.SelectedAppID}}/filters', 
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify(data)
+    });
+    
+    posting.done(function(data) {
+        if (data.error) {
+            alert(data.error);
+            return false;
+        }
+
+        console.log(data);
+        window.location = '/apps/${{.SelectedAppID}}/controls';
+        return false;
+
+        $('#results').empty();
+        $.each(data, function(index, element) {
+            $('#results').append($('<div>', {
+                text: element.ID + "-" + element.Name
+            }));
+        });
+        console.log(data);
+    });
+});
+
+function isChecked(id) {
+    return $("#" + id).parent().hasClass("checked");
+}
+
+$(".ui.dropdown.classif").dropdown();
+
+</script>
+{{ end }}

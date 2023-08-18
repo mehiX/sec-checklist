@@ -8,6 +8,7 @@ import (
 
 type Reader interface {
 	FetchByID(context.Context, string) (*domain.Application, error)
+	FindByInternalID(context.Context, int) (*domain.Application, error)
 	ListAll(context.Context) ([]domain.Application, error)
 }
 

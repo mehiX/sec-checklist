@@ -35,6 +35,14 @@ func (r *repository) FetchByID(ctx context.Context, id string) (*domain.Applicat
 	return scanForApp(row)
 }
 
+func (r *repository) FindByInternalID(ctx context.Context, internalID int) (*domain.Application, error) {
+
+	sql := "select * from V_APPS where internal_id=?"
+	row := r.db.QueryRowContext(ctx, sql, internalID)
+
+	return scanForApp(row)
+}
+
 func (r *repository) ListAll(ctx context.Context) ([]domain.Application, error) {
 	qry := "select * from V_APPS"
 

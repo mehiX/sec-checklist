@@ -43,11 +43,20 @@
             $.each(data, function(index, element) {
                 content = $('<div>', {
                     class: "content",
-                    text: element.ID + "-" + element.Name 
+                    text: element.ControlID + " - " + element.Name 
                 });
+                btn = $('<div>', {
+                    class: "ui button",
+                    text: "Validate"
+                });
+                rightContent = $('<div>', {
+                    class: "right floated content"
+                });
+                rightContent.append(btn);
                 item = $('<div>', {
                     class: "item"
                 });
+                item.append(rightContent);
                 item.append(content);
                 
                 $('#results').append(item);

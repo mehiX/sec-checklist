@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"text/template"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/spf13/cobra"
 )
 
@@ -44,32 +44,48 @@ func serve() {
 		log.Fatal(err)
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Location", "/apps")
-		w.WriteHeader(http.StatusFound)
-	})
-	http.HandleFunc("/apps/new", showTemplate(tmpl, "filters"))
-	http.HandleFunc("/apps/filters", showTemplate(tmpl, "filters"))
-	http.HandleFunc("/apps/", showApps(tmpl))
-
-	http.HandleFunc("/config", showTemplate(tmpl, "config"))
-
 	fmt.Printf("Listening on %s\n", addr)
 
-	if err := http.ListenAndServe(addr, nil); err != nil && err != http.ErrServerClosed {
+	if err := http.ListenAndServe(addr, Handlers(tmpl)); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 
 }
 
-func showApps(tmpl *template.Template) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		id := strings.TrimPrefix(r.URL.Path, "/apps/")
+func Handlers(tmpl *template.Template) http.Handler {
+	r := chi.NewMux()
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Location", "/apps")
+		w.WriteHeader(http.StatusFound)
+	})
+	r.Route("/apps", func(r chi.Router) {
+		r.Get("/new", showTemplate(tmpl, "step1"))
+		r.Get("/", showApps(tmpl))
+		r.Route("/{id:[0-9a-zA-Z-]+}", func(r chi.Router) {
+			r.Use(AppCtx)
+			r.Get("/", showApps(tmpl))
+			r.Get("/filters", showTemplate(tmpl, "step2"))
+		})
+	})
+
+	return r
+}
+
+func AppCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
 		if id != "" {
 			ctx := context.WithValue(r.Context(), AppIDCtxKey, id)
 			r = r.WithContext(ctx)
 		}
 
+		next.ServeHTTP(w, r)
+	})
+}
+
+func showApps(tmpl *template.Template) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		showTemplate(tmpl, "apps")(w, r)
 	}
 }

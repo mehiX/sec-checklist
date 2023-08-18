@@ -1,0 +1,159 @@
+{{ define "chooseApp" }}
+
+<div class="ui ordered fluid steps">
+    <div class="active step">
+        <div class="content">
+        <div class="title">Application</div>
+        <div class="description">Choose application</div>
+        </div>
+    </div>
+    <div class="step">
+        <div class="content">
+        <div class="title">Filters</div>
+        <div class="description">Choose filters</div>
+        </div>
+    </div>
+    <div class="step">
+        <div class="content">
+        <div class="title">Controls</div>
+        <div class="description">View matching controls</div>
+        </div>
+    </div>
+</div>
+
+<form class="ui form">
+    <div class="ui vertical segment">
+        <div class="fields">
+            <div class="twelve wide field">
+                <label>Name</label>
+                <div class="ui search">
+                    <div class="ui icon input">
+                        <input class="prompt" type="text" name="appName" id="appName" placeholder="application name">
+                        <i class="search icon"></i>
+                    </div>
+                    <div class="results"></div>
+                </div>
+            </div>
+            <div class="four wide field">
+                <label>ID</label>
+                <input type="text" name="appID" id="appID" placeholder="application id">
+            </div>
+        </div>
+        <div id="classification"></div>
+    </div>
+    <div class="ui vertical clearing segment">
+        <div class="ui save right floated button" tabindex="0">Next &gt;</div>
+    </div>
+</form>
+<script>
+$(".ui.search")
+    .search({
+    apiSettings: {
+      url: '{{.ApiURL}}/apps/iFacts/search?q={query}',
+      onResponse: function(remoteResp) {
+        var response = { results: []};
+        var maxResults = 8;
+        $.each(remoteResp.Assets, function (index, item) {
+            if (index >= maxResults) { return false; }
+
+            var name = item.MetaData.AsssetApplicationMetadata.ApplicationName;
+            var id = item.MetaData.AsssetApplicationMetadata.ApplicationId;
+
+            response.results.push({
+                appId: id,
+                title: name,
+                description: id + " " + name,
+                all: item
+            });
+        });
+        return response;
+      }
+    },
+    onSelect: function(result, response) {
+        console.log('result', result);
+        console.log('response', response);
+        $("#appID").val(result.appId);
+
+        var fromIFactsGenSection = $.get({
+            url:'{{.ApiURL}}/apps/iFacts/classifications/'+result.all.Id,
+            contentType: 'application/json',
+            dataType: 'json',
+            complete: function(data) {
+                console.log("response from iFacts", data);
+            }
+        });
+
+        fromIFactsGenSection.done(function(data) {
+            classif = $("#classification");
+            classif.html("");
+
+            if (!data) {
+                alert ("Could not fetch classifications");
+                return false;
+            }
+
+            if (data.Error) {
+                alert("Error fetching classifications: " + data.Error);
+                return false;
+            }
+
+            $.each(data, function(idx, elem) {
+                classif.append($("<p>", {
+                    text: elem.ClassificationName + ': ' + elem.SavedLevelName
+                }));
+            });
+        });
+
+        return true;
+    },
+    fullTextSearch: false,
+    searchOnFocus: true,
+    minCharacters : 3
+  })
+;
+
+$("#qryAppByName").on("click", function (event) {
+    event.preventDefault();
+
+    appName = $("#appName").val();
+    if (appName == "") {
+        alert("Need an application name");
+        return;
+    }
+    
+    $("#appName").parent().toggleClass("loading");
+    $("#qryAppByName").toggleClass("link");
+    console.log("calling iFacts");
+
+});
+
+$('.ui.save.button').on('click', function(event) {
+    event.preventDefault();
+
+    // TODO validate input
+
+    var data = {
+      app_internal_id: parseInt($("#appID").val(), 10),
+      app_name: $("#appName").val(),
+    };
+
+    var posting = $.post({
+        url: '{{.ApiURL}}/apps/', 
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify(data)
+    });
+    
+    posting.done(function(data) {
+        if (data.error) {
+            alert(data.error);
+            return false;
+        }
+
+        console.log(data);
+        window.location = '/apps/' + data.id + '/filters';
+        return false;
+    });
+});
+</script>
+{{ end }}

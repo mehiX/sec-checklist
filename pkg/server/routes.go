@@ -39,11 +39,13 @@ func Handlers(svcApps application.Service, iFactsClient iFacts.Client) http.Hand
 
 	r.Route("/apps", func(r chi.Router) {
 		r.Get("/", listAllApps(svcApps))
-		r.Post("/", saveApp(svcApps))
+		r.Post("/", saveApp(svcApps, iFactsClient))
 		r.Route("/{id:[0-9a-zA-Z-]+}", func(r chi.Router) {
 			r.Use(ApplicationCtx(svcApps))
 			r.Get("/", showAppByID(svcApps))
 			r.Put("/", updateApp(svcApps))
+			r.Get("/filters", showSelectFilters(svcApps))
+			r.Post("/filters", saveAppFilters(svcApps))
 			r.Get("/controls", controlsForApp(svcApps))
 		})
 		r.Get("/iFacts/search", searchIFactsAppByName(iFactsClient))

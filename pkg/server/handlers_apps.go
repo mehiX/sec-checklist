@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	appDomain "github.com/mehix/sec-checklist/pkg/domain"
+	"github.com/mehix/sec-checklist/pkg/iFacts"
 	"github.com/mehix/sec-checklist/pkg/service/application"
 )
 
@@ -44,7 +45,19 @@ func showAppByID(svc application.Service) http.HandlerFunc {
 	}
 }
 
-func saveApp(svc application.Service) http.HandlerFunc {
+func showSelectFilters(svc application.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
+}
+
+func saveAppFilters(svc application.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
+}
+
+func saveApp(svc application.Service, iFactsCli iFacts.Client) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -59,10 +72,14 @@ func saveApp(svc application.Service) http.HandlerFunc {
 
 		fmt.Printf("Request to save application: %#v\n", p)
 
-		if err := svc.SaveApplication(r.Context(), &p); err != nil {
+		if saved, err := svc.SaveApplicationOrImportFromIFacts(r.Context(), &p, iFactsCli); err != nil {
 			handleError(w, err)
 			return
+		} else {
+			p = *saved
 		}
+
+		fmt.Printf("application saved or found: %#v\n", p)
 
 		w.WriteHeader(http.StatusCreated)
 		fmt.Printf("Respond with saved application: %#v\n", p)

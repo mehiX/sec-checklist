@@ -3,11 +3,13 @@ package application
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/mehix/sec-checklist/pkg/domain"
 	"github.com/mehix/sec-checklist/pkg/domain/application"
 	"github.com/mehix/sec-checklist/pkg/domain/check"
+	"github.com/mehix/sec-checklist/pkg/iFacts"
 )
 
 var ErrDbNotConnected = fmt.Errorf("not connected to database")
@@ -16,6 +18,7 @@ type ApplicationService interface {
 	FetchApplicationByID(context.Context, string) (*domain.Application, error)
 	ListAllApplications(context.Context) ([]domain.Application, error)
 	SaveApplication(context.Context, *domain.Application) error
+	SaveApplicationOrImportFromIFacts(context.Context, *domain.Application, iFacts.Client) (*domain.Application, error)
 }
 
 type service struct {
@@ -77,4 +80,30 @@ func (s *service) SaveApplication(ctx context.Context, app *domain.Application) 
 	}
 
 	return s.appsDbRepo.Update(ctx, app)
+}
+
+func (s *service) SaveApplicationOrImportFromIFacts(ctx context.Context, app *domain.Application, cli iFacts.Client) (*domain.Application, error) {
+	if s.appsDbRepo == nil {
+		return nil, ErrDbNotConnected
+	}
+
+	if app.ID == "" {
+		found, err := s.appsDbRepo.FindByInternalID(ctx, app.InternalID)
+		if err != nil {
+			log.Printf("finding app by internal ID, got error: %v\n", err.Error())
+		} else {
+			if found != nil {
+				// we already have an app saved for this InternalID
+				return found, nil
+			}
+		}
+
+		app.ID = uuid.NewString()
+
+		if err := s.appsDbRepo.Save(ctx, app); err != nil {
+			return app, err
+		}
+	}
+
+	return app, nil
 }
