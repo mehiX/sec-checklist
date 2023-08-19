@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/mehix/sec-checklist/pkg/domain"
 	appDomain "github.com/mehix/sec-checklist/pkg/domain"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
 	"github.com/mehix/sec-checklist/pkg/service/application"
@@ -54,6 +55,30 @@ func showSelectFilters(svc application.Service) http.HandlerFunc {
 func saveAppFilters(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		w.Header().Set("Content-type", "application/json")
+
+		app, ok := r.Context().Value(ApplicationCtxKey).(*domain.Application)
+		if !ok {
+			handleError(w, fmt.Errorf("unknown application"))
+			return
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(app); err != nil {
+			log.Printf("receiving new app filters: %v\n", err)
+			handleError(w, err)
+			return
+		}
+
+		if err := svc.SaveApplicationFilters(r.Context(), app); err != nil {
+			log.Printf("saving filters: %v\n", err)
+			handleError(w, err)
+			return
+		}
+
+		if err := json.NewEncoder(w).Encode(app); err != nil {
+			handleError(w, err)
+			return
+		}
 	}
 }
 

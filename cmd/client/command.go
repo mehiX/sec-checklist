@@ -66,6 +66,7 @@ func Handlers(tmpl *template.Template) http.Handler {
 			r.Use(AppCtx)
 			r.Get("/", showApps(tmpl))
 			r.Get("/filters", showTemplate(tmpl, "step2"))
+			r.Get("/controls", showTemplate(tmpl, "step3"))
 		})
 	})
 

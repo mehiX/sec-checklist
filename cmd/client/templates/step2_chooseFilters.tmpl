@@ -131,7 +131,7 @@ $('.ui.save.button').on('click', function(event) {
         }
 
         console.log(data);
-        window.location = '/apps/${{.SelectedAppID}}/controls';
+        window.location = '/apps/{{.SelectedAppID}}/controls';
         return false;
 
         $('#results').empty();

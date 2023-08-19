@@ -65,11 +65,43 @@ func (r *repository) ListAll(ctx context.Context) ([]domain.Application, error) 
 	return apps, nil
 }
 
+func (r *repository) SaveFilters(ctx context.Context, app *domain.Application) error {
+
+	updateAppProfile := `update APP_PROFILES set
+	 only_handle_centrally = ?,
+	 handled_centrally_by = ?,
+	 excluded_for_external_supplier = ?,
+	 software_development_relevant = ?,
+     cloud_only = ?,
+	 physical_security_only = ?,
+	 personal_security_only = ? 
+	 where APP_ID = ?`
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(
+		ctx, updateAppProfile,
+		app.OnlyHandledCentrally,
+		app.HandledCentrallyBy, app.ExcludeForExternalSupplier,
+		app.SoftwareDevelopmentRelevant, app.CloudOnly,
+		app.PhysicalSecurityOnly, app.PersonalSecurityOnly, app.ID)
+	if err != nil {
+		if e := tx.Rollback(); e != nil {
+			log.Printf("failed rollback for tx when updating app_profiles: %v\n", err)
+		}
+		return err
+	}
+
+	return nil
+
+}
+
 func (r *repository) Save(ctx context.Context, app *domain.Application) (err error) {
 	insertApp := "insert into APPS (id, internal_id, name) values (?, ?, ?)"
-	insertAppProfile := `insert into APP_PROFILES (
-		APP_ID, only_handle_centrally,handled_centrally_by,excluded_for_external_supplier,software_development_relevant,
-        cloud_only,physical_security_only,personal_security_only) values (?, ?, ?, ?, ?, ?, ?, ?)`
+	insertEmptyAppFilters := "insert into APPS_PROFILES (APP_ID) values (?)"
 	insertAppClassifications := `insert into APP_CLASSIFICATIONS (
 		APP_ID, c, i, a, t) values (?, ?, ?, ?, ?)`
 
@@ -93,14 +125,10 @@ func (r *repository) Save(ctx context.Context, app *domain.Application) (err err
 	if err != nil {
 		return
 	}
-	_, err = tx.ExecContext(
-		ctx, insertAppProfile,
-		app.ID, app.OnlyHandledCentrally,
-		app.HandledCentrallyBy, app.ExcludeForExternalSupplier,
-		app.SoftwareDevelopmentRelevant, app.CloudOnly,
-		app.PhysicalSecurityOnly, app.PersonalSecurityOnly)
+
+	_, err = tx.ExecContext(ctx, insertEmptyAppFilters, app.ID)
 	if err != nil {
-		return
+		log.Printf("failed to insert empty app_profiles records: %v\n", err)
 	}
 
 	_, err = tx.ExecContext(
@@ -115,15 +143,7 @@ func (r *repository) Save(ctx context.Context, app *domain.Application) (err err
 
 func (r *repository) Update(ctx context.Context, app *domain.Application) (err error) {
 	updateApp := "update APPS set name = ? where id = ?)"
-	updateAppProfile := `update APP_PROFILES set
-	 only_handle_centrally = ?,
-	 handled_centrally_by = ?,
-	 excluded_for_external_supplier = ?,
-	 software_development_relevant = ?,
-     cloud_only = ?,
-	 physical_security_only = ?,
-	 personal_security_only = ? 
-	 where APP_ID = ?`
+
 	updateAppClassifications := `update APP_CLASSIFICATIONS set c = ?, i = ?, a = ?, t = ? where APP_ID = ?`
 
 	tx, err := r.db.BeginTx(ctx, nil)
@@ -143,16 +163,6 @@ func (r *repository) Update(ctx context.Context, app *domain.Application) (err e
 	}()
 
 	_, err = tx.ExecContext(ctx, updateApp, app.Name, app.ID)
-	if err != nil {
-		return
-	}
-	_, err = tx.ExecContext(
-		ctx, updateAppProfile,
-		app.OnlyHandledCentrally,
-		app.HandledCentrallyBy, app.ExcludeForExternalSupplier,
-		app.SoftwareDevelopmentRelevant, app.CloudOnly,
-		app.PhysicalSecurityOnly, app.PersonalSecurityOnly,
-		app.ID)
 	if err != nil {
 		return
 	}

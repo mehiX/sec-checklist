@@ -14,6 +14,7 @@ type Reader interface {
 
 type Writer interface {
 	Save(context.Context, *domain.Application) error
+	SaveFilters(context.Context, *domain.Application) error
 	Update(context.Context, *domain.Application) error
 }
 

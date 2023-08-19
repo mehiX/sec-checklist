@@ -18,6 +18,7 @@ type ApplicationService interface {
 	FetchApplicationByID(context.Context, string) (*domain.Application, error)
 	ListAllApplications(context.Context) ([]domain.Application, error)
 	SaveApplication(context.Context, *domain.Application) error
+	SaveApplicationFilters(context.Context, *domain.Application) error
 	SaveApplicationOrImportFromIFacts(context.Context, *domain.Application, iFacts.Client) (*domain.Application, error)
 }
 
@@ -80,6 +81,14 @@ func (s *service) SaveApplication(ctx context.Context, app *domain.Application) 
 	}
 
 	return s.appsDbRepo.Update(ctx, app)
+}
+
+func (s *service) SaveApplicationFilters(ctx context.Context, app *domain.Application) error {
+	if s.appsDbRepo == nil {
+		return ErrDbNotConnected
+	}
+
+	return s.appsDbRepo.SaveFilters(ctx, app)
 }
 
 func (s *service) SaveApplicationOrImportFromIFacts(ctx context.Context, app *domain.Application, cli iFacts.Client) (*domain.Application, error) {
