@@ -95,7 +95,7 @@ func (r *repository) SaveFilters(ctx context.Context, app *domain.Application) e
 		return err
 	}
 
-	return nil
+	return tx.Commit()
 
 }
 

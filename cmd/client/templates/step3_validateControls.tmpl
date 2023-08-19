@@ -1,0 +1,96 @@
+{{ define "validateControls" }}
+
+<div class="ui ordered fluid steps">
+    <div class="completed step">
+        <div class="content">
+        <div class="title">Application</div>
+        <div class="description">Choose application</div>
+        </div>
+    </div>
+    <div class="completed step">
+        <div class="content">
+        <div class="title">Filters</div>
+        <div class="description">Choose filters</div>
+        </div>
+    </div>
+    <div class="active step">
+        <div class="content">
+        <div class="title">Controls</div>
+        <div class="description">View matching controls</div>
+        </div>
+    </div>
+</div>
+
+<form class="ui form">
+    <p><a href="/apps">&lt; All apps</a></p>
+    <h2 class="ui header title">Show template for app {{ .SelectedAppID }}</h2>
+    <div class="ui middle aligned divided list" id="results"></div>
+</form>
+<script>
+    function showAppMetadata() {
+        var metadata = $.get({
+            url: '{{.ApiURL}}/apps/{{.SelectedAppID}}',
+            dataType: 'json'
+        });
+
+        metadata.done(function(data){
+            if (!data) {
+                return false;
+            }
+
+            $(".ui.header.title").html(data.app_name);
+            
+            console.log(data);
+        });
+    }
+
+    function showControls() {
+        var controls = $.get({
+            url: '{{.ApiURL}}/apps/{{.SelectedAppID}}/controls', 
+            dataType: 'json'
+        });
+        
+        controls.done(function(data) {
+            $('#results').empty();
+
+            if (!data) {
+                $('#results').append($("<div>", {class:"item", text:"(no controls found)"}));
+                return false;
+            }
+
+            if (data.error) {
+                alert(data.error);
+                return false;
+            }
+
+            $.each(data, function(index, element) {
+                content = $('<div>', {
+                    class: "content",
+                    text: element.ControlID + " - " + element.Name 
+                });
+                btn = $('<div>', {
+                    class: "ui button",
+                    text: "Validate"
+                });
+                rightContent = $('<div>', {
+                    class: "right floated content"
+                });
+                rightContent.append(btn);
+                item = $('<div>', {
+                    class: "item"
+                });
+                item.append(rightContent);
+                item.append(content);
+                
+                $('#results').append(item);
+            });
+            console.log(data);
+        });
+        }
+
+    $(window).on('load', function() {
+        showAppMetadata();
+        showControls();
+    });
+</script>
+{{ end }}
