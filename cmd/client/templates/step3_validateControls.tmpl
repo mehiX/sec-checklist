@@ -96,7 +96,13 @@
         var posting = $.post({
             url: '{{.ApiURL}}/apps/{{.SelectedAppID}}/controls', 
             contentType: 'application/json',
-            dataType: 'json'
+            dataType: 'json',
+            statusCode: {
+                201: function (xhr) {
+                    window.location = '/apps/{{.SelectedAppID}}';
+                    return false;
+                }
+            }
         });
         
         posting.done(function(data) {
@@ -104,9 +110,6 @@
                 alert(data.error);
                 return false;
             }
-
-            window.location = '/apps/{{.SelectedAppID}}';
-            return false;
         });
     });
 
