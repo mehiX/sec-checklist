@@ -1,6 +1,10 @@
 package domain
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+	"strings"
+)
 
 type Application struct {
 	ID                          string           `json:"id"`
@@ -15,6 +19,41 @@ type Application struct {
 	PhysicalSecurityOnly        bool             `json:"physical_security_only"`
 	PersonalSecurityOnly        bool             `json:"personal_security_only"`
 	Classifications             []Classification `json:"classifications"`
+}
+
+func (a *Application) LevelC() string {
+	return getLevel("(C)", a.Classifications)
+}
+func (a *Application) LevelI() string {
+	return getLevel("(I)", a.Classifications)
+}
+func (a *Application) LevelA() string {
+	return getLevel("(A)", a.Classifications)
+}
+func (a *Application) LevelT() string {
+	return getLevel("(T)", a.Classifications)
+}
+
+var num = regexp.MustCompile("[0-9]{1}")
+
+// getLevel returns level as string since it is easier to use it
+// like this when filtering controls.
+func getLevel(name string, classifications []Classification) string {
+	if classifications == nil {
+		return ""
+	}
+
+	for _, c := range classifications {
+		if strings.Contains(c.Name, name) {
+			b := num.Find([]byte(c.LevelName))
+			if b != nil {
+				return string(b)
+			}
+		}
+	}
+
+	return ""
+
 }
 
 type Control struct {

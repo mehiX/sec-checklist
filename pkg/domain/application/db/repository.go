@@ -30,9 +30,41 @@ func NewRepository(dsn string) application.ReaderWriter {
 
 func (r *repository) FetchByID(ctx context.Context, id string) (*domain.Application, error) {
 	sql := "select * from V_APPS where ID=?"
+	sqlClassif := `select 
+	classification_id, classification_name, 
+	level_id, level_name 
+	from APP_CLASSIFICATIONS
+	where IFACTS_ID = ?`
+
 	row := r.db.QueryRowContext(ctx, sql, id)
 
-	return scanForApp(row)
+	app, err := scanForApp(row)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.db.QueryContext(ctx, sqlClassif, app.IFactsID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var cid, cname, lid, lname string
+		if err := rows.Scan(&cid, &cname, &lid, &lname); err != nil {
+			log.Printf("scanning app_classifications row: %v\n", err)
+			continue
+		}
+		classification := domain.Classification{
+			ID:        cid,
+			Name:      cname,
+			LevelID:   lid,
+			LevelName: lname,
+		}
+		app.Classifications = append(app.Classifications, classification)
+	}
+
+	return app, nil
 }
 
 func (r *repository) FindByInternalID(ctx context.Context, internalID int) (*domain.Application, error) {

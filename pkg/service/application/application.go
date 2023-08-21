@@ -21,6 +21,8 @@ type ApplicationService interface {
 	SaveApplicationFilters(context.Context, *domain.Application) error
 	SaveApplicationOrImportFromIFacts(context.Context, *domain.Application, iFacts.Client) (*domain.Application, error)
 	SaveFromIFacts(ctx context.Context, iFactsID string, ifclient iFacts.Client) error
+
+	FilterControls(context.Context, domain.ControlsFilter) ([]domain.Control, error)
 }
 
 type service struct {
@@ -82,6 +84,10 @@ func (s *service) SaveApplication(ctx context.Context, app *domain.Application) 
 	}
 
 	return s.appsDbRepo.Update(ctx, app)
+}
+
+func (s *service) FilterControls(ctx context.Context, filter domain.ControlsFilter) ([]domain.Control, error) {
+	return s.dbRepo.ControlsForFilter(ctx, &filter)
 }
 
 func (s *service) SaveApplicationFilters(ctx context.Context, app *domain.Application) error {

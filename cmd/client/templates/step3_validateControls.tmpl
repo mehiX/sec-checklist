@@ -46,7 +46,7 @@
 
     function showControls() {
         var controls = $.get({
-            url: '{{.ApiURL}}/apps/{{.SelectedAppID}}/controls', 
+            url: '{{.ApiURL}}/apps/{{.SelectedAppID}}/controls/preview', 
             dataType: 'json'
         });
         

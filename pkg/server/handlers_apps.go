@@ -169,6 +169,57 @@ func controlsForApp(svc application.Service) http.HandlerFunc {
 	}
 }
 
+func previewControlsForApp(svc application.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		if !ok {
+			handleError(w, fmt.Errorf("missing application"))
+			return
+		}
+
+		ctrls, err := svc.FilterControls(r.Context(), appToFilter(app))
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(ctrls); err != nil {
+			log.Printf("Encoding controls for app: %v\n", err)
+			handleError(w, err)
+			return
+		}
+	}
+}
+
+func appToFilter(app *domain.Application) domain.ControlsFilter {
+	filter := domain.ControlsFilter{}
+
+	if app.OnlyHandledCentrally {
+		filter.OnlyHandleCentrally = &app.OnlyHandledCentrally
+	}
+	if app.HandledCentrallyBy != "" {
+		filter.HandledCentrallyBy = &app.HandledCentrallyBy
+	}
+	if app.ExcludeForExternalSupplier {
+		filter.ExcludeForExternalSupplier = &app.ExcludeForExternalSupplier
+	}
+	if app.SoftwareDevelopmentRelevant {
+		filter.SoftwareDevelopmentRelevant = &app.SoftwareDevelopmentRelevant
+	}
+	if app.CloudOnly {
+		filter.CloudOnly = &app.CloudOnly
+	}
+	if app.PhysicalSecurityOnly {
+		filter.PhysicalSecurityOnly = &app.PhysicalSecurityOnly
+	}
+	if app.PersonalSecurityOnly {
+		filter.PersonalSecurityOnly = &app.PersonalSecurityOnly
+	}
+
+	return filter
+}
+
 func saveLocallyFromIFacts(svc application.Service, ifclient iFacts.Client) http.HandlerFunc {
 
 	type request struct {
