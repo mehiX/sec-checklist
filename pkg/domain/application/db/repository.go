@@ -101,7 +101,7 @@ func (r *repository) SaveFilters(ctx context.Context, app *domain.Application) e
 
 func (r *repository) Save(ctx context.Context, app *domain.Application) (err error) {
 	insertApp := "insert into APPS (id, internal_id, name, ifacts_id) values (?, ?, ?, ?)"
-	insertEmptyAppFilters := "insert into APPS_PROFILES (APP_ID) values (?)"
+	insertEmptyAppFilters := "insert into APP_PROFILES (APP_ID) values (?)"
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {

@@ -81,7 +81,7 @@ CREATE VIEW V_APPS AS
         ap.physical_security_only,
         ap.personal_security_only
     from APPS a 
-    inner join APP_PROFILES ap on a.ID = ap.APP_ID;
+    left join APP_PROFILES ap on a.ID = ap.APP_ID;
 
 CREATE VIEW V_APPS_CONTROLS AS
     select
@@ -92,5 +92,5 @@ CREATE VIEW V_APPS_CONTROLS AS
         ac.is_done,
         ac.notes
     from APP_CONTROLS ac
-    inner join APPS a on a.ID = ac.APP_ID
-    inner join CHECKS c on c.ID = ac.CHECK_ID;
+    left join APPS a on a.ID = ac.APP_ID
+    left join CHECKS c on c.ID = ac.CHECK_ID;
