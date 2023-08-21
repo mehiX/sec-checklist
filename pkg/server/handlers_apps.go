@@ -192,6 +192,31 @@ func previewControlsForApp(svc application.Service) http.HandlerFunc {
 	}
 }
 
+func saveControlsForApp(svc application.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		if !ok {
+			handleError(w, fmt.Errorf("missing application"))
+			return
+		}
+
+		controls, err := svc.FilterControls(r.Context(), appToFilter(app))
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+
+		err = svc.SaveControlsForApplication(r.Context(), app, controls)
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+	}
+}
+
 func appToFilter(app *domain.Application) domain.ControlsFilter {
 	filter := domain.ControlsFilter{}
 

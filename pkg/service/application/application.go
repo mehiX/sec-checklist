@@ -23,6 +23,7 @@ type ApplicationService interface {
 	SaveFromIFacts(ctx context.Context, iFactsID string, ifclient iFacts.Client) error
 
 	FilterControls(context.Context, domain.ControlsFilter) ([]domain.Control, error)
+	SaveControlsForApplication(context.Context, *domain.Application, []domain.Control) error
 }
 
 type service struct {
@@ -131,4 +132,9 @@ func (s *service) SaveFromIFacts(ctx context.Context, id string, ifc iFacts.Clie
 	}
 
 	return s.appsDbRepo.SaveIFactsClassifications(ctx, id, classifications)
+}
+
+func (s *service) SaveControlsForApplication(ctx context.Context, app *domain.Application, ctrls []domain.Control) error {
+
+	return s.dbRepo.SaveForApplication(ctx, app, ctrls)
 }

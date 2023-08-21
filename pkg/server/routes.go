@@ -48,6 +48,7 @@ func Handlers(svcApps application.Service, iFactsClient iFacts.Client) http.Hand
 			r.Post("/filters", saveAppFilters(svcApps))
 			r.Get("/controls", controlsForApp(svcApps))
 			r.Get("/controls/preview", previewControlsForApp(svcApps))
+			r.Post("/controls", saveControlsForApp(svcApps))
 		})
 		r.Get("/iFacts/search", searchIFactsAppByName(iFactsClient))
 		r.Get("/iFacts/classifications/{iFactsID:[0-9a-zA-Z-]+}", getIFactsClassifications(svcApps, iFactsClient))
