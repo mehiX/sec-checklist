@@ -49,7 +49,7 @@ func Handlers(svcApps application.Service, iFactsClient iFacts.Client) http.Hand
 			r.Get("/controls", controlsForApp(svcApps))
 		})
 		r.Get("/iFacts/search", searchIFactsAppByName(iFactsClient))
-		r.Get("/iFacts/classifications/{iFactsID:[0-9a-zA-Z-]+}", getIFactsClassifications(iFactsClient))
+		r.Get("/iFacts/classifications/{iFactsID:[0-9a-zA-Z-]+}", getIFactsClassifications(svcApps, iFactsClient))
 	})
 
 	r.Route("/controls", func(r chi.Router) {

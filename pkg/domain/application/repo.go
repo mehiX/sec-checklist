@@ -16,6 +16,7 @@ type Writer interface {
 	Save(context.Context, *domain.Application) error
 	SaveFilters(context.Context, *domain.Application) error
 	Update(context.Context, *domain.Application) error
+	SaveIFactsClassifications(context.Context, string, []domain.Classification) error
 }
 
 type ReaderWriter interface {

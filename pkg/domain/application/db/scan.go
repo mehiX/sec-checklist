@@ -11,18 +11,16 @@ type Scanner interface {
 
 func scanForApp[T Scanner](s T) (*domain.Application, error) {
 
-	var id, name, handledCentrallyBy string
+	var id, name, iFactsID, handledCentrallyBy string
 	var internalID int
 	var onlyHandleCentrally, excludedForExternalSupplier, softwareDevelopmentRelevant bool
 	var cloudOnly, physicalSecurityOnly, personalSecurityOnly bool
-	var c, i, a, t int
 
 	finalValues := []any{
-		&id, &internalID, &name,
+		&id, &internalID, &name, &iFactsID,
 		&onlyHandleCentrally, &handledCentrallyBy, &excludedForExternalSupplier,
 		&softwareDevelopmentRelevant, &cloudOnly,
 		&physicalSecurityOnly, &personalSecurityOnly,
-		&c, &i, &a, &t,
 	}
 
 	if err := s.Scan(finalValues...); err != nil {
@@ -32,6 +30,7 @@ func scanForApp[T Scanner](s T) (*domain.Application, error) {
 	return &domain.Application{
 		ID:                          id,
 		Name:                        name,
+		IFactsID:                    iFactsID,
 		InternalID:                  internalID,
 		OnlyHandledCentrally:        onlyHandleCentrally,
 		HandledCentrallyBy:          handledCentrallyBy,
@@ -40,9 +39,5 @@ func scanForApp[T Scanner](s T) (*domain.Application, error) {
 		CloudOnly:                   cloudOnly,
 		PhysicalSecurityOnly:        physicalSecurityOnly,
 		PersonalSecurityOnly:        personalSecurityOnly,
-		C:                           c,
-		I:                           i,
-		A:                           a,
-		T:                           t,
 	}, nil
 }

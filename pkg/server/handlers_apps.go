@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/mehix/sec-checklist/pkg/domain"
 	appDomain "github.com/mehix/sec-checklist/pkg/domain"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
@@ -164,6 +165,43 @@ func controlsForApp(svc application.Service) http.HandlerFunc {
 			log.Printf("Encoding controls for app: %v\n", err)
 			handleError(w, err)
 			return
+		}
+	}
+}
+
+func saveLocallyFromIFacts(svc application.Service, ifclient iFacts.Client) http.HandlerFunc {
+
+	type request struct {
+		InternalID int64  `json:"app_internal_id"`
+		Name       string `json:"app_name"`
+		IFactsID   string `json:"ifacts_id"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		iFactsID := chi.URLParam(r, "iFactsID")
+		if iFactsID == "" {
+			handleError(w, fmt.Errorf("missing iFacts ID"))
+			return
+		}
+
+		var b request
+		if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
+			handleError(w, err)
+			return
+		}
+
+		classifications, err := ifclient.GetClassifications(iFactsID)
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+
+		svc.SaveFromIFacts(r.Context(), iFactsID, ifclient)
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(classifications); err != nil {
+			handleError(w, err)
 		}
 	}
 }

@@ -2,6 +2,7 @@ CREATE TABLE APPS (
     ID varchar(36) NOT NULL,
     internal_id int not NULL,
     name varchar(256) NOT NULL,
+    ifacts_id varchar(36) NOT NULL,
     inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT NULL,
     UNIQUE KEY app_internal_id(internal_id),
@@ -24,11 +25,11 @@ CREATE TABLE APP_PROFILES (
 );
 
 CREATE TABLE APP_CLASSIFICATIONS (
-    APP_ID varchar(36) NOT NULL,
-    c int NOT NULL DEFAULT 1,
-    i int NOT NULL DEFAULT 1,
-    a int NOT NULL DEFAULT 1,
-    t int NOT NULL DEFAULT 1,
+    IFACTS_ID varchar(36) NOT NULL,
+    classification_id varchar(36) NOT NULL,
+    classification_name varchar(200) NOT NULL,
+    level_id varchar(36) NOT NULL,
+    level_name varchar(50) NOT NULL,
     inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT NULL,
     UNIQUE KEY app_classifications_id(APP_ID),
@@ -72,20 +73,16 @@ CREATE VIEW V_APPS AS
         a.ID,
         a.internal_id,
         a.name, 
+        a.ifacts_id,
         ap.only_handle_centrally,
         ap.handled_centrally_by,
         ap.excluded_for_external_supplier,
         ap.software_development_relevant,
         ap.cloud_only,
         ap.physical_security_only,
-        ap.personal_security_only,
-        ac.c,
-        ac.i,
-        ac.a,
-        ac.t
+        ap.personal_security_only
     from APPS a 
-    inner join APP_PROFILES ap on a.ID = ap.APP_ID
-    inner join APP_CLASSIFICATIONS ac on a.ID = ac.APP_ID;
+    inner join APP_PROFILES ap on a.ID = ap.APP_ID;
 
 CREATE VIEW V_APPS_CONTROLS AS
     select

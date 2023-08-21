@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
+	"github.com/mehix/sec-checklist/pkg/service/application"
 )
 
 func searchIFactsAppByName(ifc iFacts.Client) http.HandlerFunc {
@@ -36,7 +38,7 @@ func searchIFactsAppByName(ifc iFacts.Client) http.HandlerFunc {
 	}
 }
 
-func getIFactsClassifications(ifc iFacts.Client) http.HandlerFunc {
+func getIFactsClassifications(svc application.Service, ifc iFacts.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		iFactsID := chi.URLParam(r, "iFactsID")
@@ -45,6 +47,10 @@ func getIFactsClassifications(ifc iFacts.Client) http.HandlerFunc {
 		if err != nil {
 			handleError(w, err)
 			return
+		}
+
+		if err := svc.SaveFromIFacts(r.Context(), iFactsID, ifc); err != nil {
+			log.Printf("saving data from iFacts: %v\n", err)
 		}
 
 		w.Header().Set("Content-Type", "application/json")

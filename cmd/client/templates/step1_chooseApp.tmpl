@@ -39,6 +39,7 @@
                 <input type="text" name="appID" id="appID" placeholder="application id">
             </div>
         </div>
+        <input type="hidden" name="iFactsID" id="iFactsID" value="">
         <div id="classification"></div>
     </div>
     <div class="ui vertical clearing segment">
@@ -73,6 +74,7 @@ $(".ui.search")
         console.log('result', result);
         console.log('response', response);
         $("#appID").val(result.appId);
+        $("#iFactsID").val(result.all.Id);
 
         var fromIFactsGenSection = $.get({
             url:'{{.ApiURL}}/apps/iFacts/classifications/'+result.all.Id,
@@ -135,6 +137,7 @@ $('.ui.save.button').on('click', function(event) {
     var data = {
       app_internal_id: parseInt($("#appID").val(), 10),
       app_name: $("#appName").val(),
+      ifacts_id: $("#iFactsID").val()
     };
 
     var posting = $.post({

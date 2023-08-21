@@ -20,6 +20,7 @@ type ApplicationService interface {
 	SaveApplication(context.Context, *domain.Application) error
 	SaveApplicationFilters(context.Context, *domain.Application) error
 	SaveApplicationOrImportFromIFacts(context.Context, *domain.Application, iFacts.Client) (*domain.Application, error)
+	SaveFromIFacts(ctx context.Context, iFactsID string, ifclient iFacts.Client) error
 }
 
 type service struct {
@@ -115,4 +116,13 @@ func (s *service) SaveApplicationOrImportFromIFacts(ctx context.Context, app *do
 	}
 
 	return app, nil
+}
+
+func (s *service) SaveFromIFacts(ctx context.Context, id string, ifc iFacts.Client) error {
+	classifications, err := ifc.GetClassifications(id)
+	if err != nil {
+		return err
+	}
+
+	return s.appsDbRepo.SaveIFactsClassifications(ctx, id, classifications)
 }

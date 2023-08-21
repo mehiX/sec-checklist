@@ -100,10 +100,8 @@ func (r *repository) SaveFilters(ctx context.Context, app *domain.Application) e
 }
 
 func (r *repository) Save(ctx context.Context, app *domain.Application) (err error) {
-	insertApp := "insert into APPS (id, internal_id, name) values (?, ?, ?)"
+	insertApp := "insert into APPS (id, internal_id, name, ifacts_id) values (?, ?, ?, ?)"
 	insertEmptyAppFilters := "insert into APPS_PROFILES (APP_ID) values (?)"
-	insertAppClassifications := `insert into APP_CLASSIFICATIONS (
-		APP_ID, c, i, a, t) values (?, ?, ?, ?, ?)`
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -121,7 +119,7 @@ func (r *repository) Save(ctx context.Context, app *domain.Application) (err err
 		}
 	}()
 
-	_, err = tx.ExecContext(ctx, insertApp, app.ID, app.InternalID, app.Name)
+	_, err = tx.ExecContext(ctx, insertApp, app.ID, app.InternalID, app.Name, app.IFactsID)
 	if err != nil {
 		return
 	}
@@ -131,20 +129,11 @@ func (r *repository) Save(ctx context.Context, app *domain.Application) (err err
 		log.Printf("failed to insert empty app_profiles records: %v\n", err)
 	}
 
-	_, err = tx.ExecContext(
-		ctx, insertAppClassifications,
-		app.ID, app.C, app.I, app.A, app.T)
-	if err != nil {
-		return
-	}
-
 	return nil
 }
 
 func (r *repository) Update(ctx context.Context, app *domain.Application) (err error) {
 	updateApp := "update APPS set name = ? where id = ?)"
-
-	updateAppClassifications := `update APP_CLASSIFICATIONS set c = ?, i = ?, a = ?, t = ? where APP_ID = ?`
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -167,12 +156,28 @@ func (r *repository) Update(ctx context.Context, app *domain.Application) (err e
 		return
 	}
 
-	_, err = tx.ExecContext(
-		ctx, updateAppClassifications,
-		app.C, app.I, app.A, app.T, app.ID)
+	return nil
+}
+
+func (r *repository) SaveIFactsClassifications(ctx context.Context, id string, classifications []domain.Classification) error {
+
+	sqlInsert := `insert into APP_CLASSIFICATIONS 
+	(IFACTS_ID, classification_id, classification_name,
+		level_id, level_name) values (?, ?, ?, ?, ?)`
+
+	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return
+		return err
+	}
+	prep, err := tx.PrepareContext(ctx, sqlInsert)
+	if err != nil {
+		return err
+	}
+	for _, clsf := range classifications {
+		if _, err := prep.ExecContext(ctx, id, clsf.ID, clsf.Name, clsf.LevelID, clsf.LevelName); err != nil {
+			log.Printf("error saving classification: %v\n", err)
+		}
 	}
 
-	return nil
+	return tx.Commit()
 }
