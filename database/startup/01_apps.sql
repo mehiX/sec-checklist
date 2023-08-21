@@ -32,8 +32,7 @@ CREATE TABLE APP_CLASSIFICATIONS (
     level_name varchar(50) NOT NULL,
     inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT NULL,
-    UNIQUE KEY app_classifications_id(APP_ID),
-    FOREIGN KEY fk_classifications_apps (APP_ID) REFERENCES APPS(ID) ON DELETE CASCADE
+    UNIQUE KEY app_classifications_id(IFACTS_ID, classification_id)
 );
 
 CREATE TABLE APP_CONTROLS (
