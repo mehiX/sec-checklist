@@ -67,6 +67,7 @@ func Handlers(tmpl *template.Template) http.Handler {
 			r.Get("/", showApps(tmpl))
 			r.Get("/filters", showTemplate(tmpl, "step2"))
 			r.Get("/controls", showTemplate(tmpl, "step3"))
+			r.Get("/controls/{id:[0-9.]+}/", showApplicationControl(tmpl))
 		})
 	})
 
@@ -114,5 +115,43 @@ func showTemplate(t *template.Template, name string) http.HandlerFunc {
 			w.Write([]byte(err.Error()))
 			return
 		}
+	}
+}
+
+func showApplicationControl(t *template.Template) http.HandlerFunc {
+	type data struct {
+		ApiURL        string
+		SelectedAppID string
+		ControlID     string
+	}
+
+	d := data{
+		ApiURL: apiAddr,
+	}
+
+	templateName := "appControl"
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "text/html; charset=utf-8")
+
+		if appID, ok := r.Context().Value(AppIDCtxKey).(string); ok {
+			d.SelectedAppID = appID
+		}
+
+		ctrlID := chi.URLParam(r, "id")
+		if ctrlID == "" {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("missing control ID"))
+			return
+		}
+
+		d.ControlID = ctrlID
+
+		if err := t.ExecuteTemplate(w, templateName, d); err != nil {
+			log.Printf("Executing template index: %v\n", err.Error())
+			w.Write([]byte(err.Error()))
+			return
+		}
+
 	}
 }

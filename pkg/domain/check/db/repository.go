@@ -236,6 +236,32 @@ func (r *repository) ControlsForApplication(ctx context.Context, appID string) (
 	return ctrls, nil
 }
 
+func (r *repository) ControlForApplicationByID(ctx context.Context, appID, ctrlID string) (domain.AppControl, error) {
+
+	qry := `select * from V_APPS_CONTROLS where app_id = ? and check_id = ?`
+
+	row := r.db.QueryRowContext(ctx, qry, appID, ctrlID)
+
+	var appId, checkId, name, desc, notes string
+	var isDone bool
+
+	err := row.Scan(&appId, &checkId, &name, &desc, &isDone, &notes)
+	if err != nil {
+		log.Printf("Scanning for one app control from v_apps_controls: %v\n", err)
+	}
+
+	ctrl := domain.AppControl{
+		AppID:       appId,
+		ControlID:   checkId,
+		Name:        name,
+		Description: desc,
+		IsDone:      isDone,
+		Notes:       notes,
+	}
+
+	return ctrl, err
+}
+
 func (r *repository) SaveForApplication(ctx context.Context, app *domain.Application, ctrls []domain.Control) error {
 
 	qry := `insert into APP_CONTROLS (APP_ID, CHECK_ID) values (?, ?)`

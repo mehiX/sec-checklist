@@ -2,6 +2,7 @@ package xls
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -85,6 +86,10 @@ func (r *repository) ControlsForFilter(ctx context.Context, app *domain.Controls
 
 func (r *repository) ControlsForApplication(context.Context, string) ([]domain.AppControl, error) {
 	return nil, fmt.Errorf("not supported")
+}
+
+func (r *repository) ControlForApplicationByID(context.Context, string, string) (domain.AppControl, error) {
+	return domain.AppControl{}, errors.New("not supported")
 }
 
 func fromRowData(row []string) domain.Control {

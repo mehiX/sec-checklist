@@ -1,11 +1,11 @@
-{{ define "controls" }}
+{{ define "appControl" }}
 {{ template "head" }}
 </head>
 
 <body>
     <div class="ui container">
         <p><a href="/apps">&lt; All apps</a></p>
-        <h2 class="ui header title">Show template for app {{ .SelectedAppID }}</h2>
+        <h2 class="ui header title">{{ .SelectedAppID }} -  {{ .ControlID }}</h2>
         <div class="ui middle aligned divided list" id="results"></div>
 
         <script>
@@ -51,9 +51,8 @@
                         text: element.ControlID + " - " + element.Name 
                     });
                     btn = $('<div>', {
-                        class: "ui button validate",
-                        text: "Validate",
-                        "data-id": element.ControlID
+                        class: "ui button",
+                        text: "Validate"
                     });
                     rightContent = $('<div>', {
                         class: "right floated content"
@@ -68,21 +67,12 @@
                     $('#results').append(item);
                 });
                 console.log(data);
-
-                $(".ui.button.validate").on("click", function(event) {
-                    event.preventDefault();
-
-                    var lnk = "/apps/{{.SelectedAppID}}/controls/"+$(this).data().id+"/";
-                    window.location.href = lnk;
-
-                    return false;
-                });
             });
             }
 
         $(window).on('load', function() {
-            showAppMetadata();
-            showControls();
+            //showAppMetadata();
+            //showControls();
         });
         </script>
     </div>

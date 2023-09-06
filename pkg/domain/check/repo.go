@@ -12,6 +12,7 @@ type Reader interface {
 	FetchByID(context.Context, string) (domain.Control, error)
 	ControlsForFilter(context.Context, *domain.ControlsFilter) ([]domain.Control, error)
 	ControlsForApplication(ctx context.Context, appID string) ([]domain.AppControl, error)
+	ControlForApplicationByID(ctx context.Context, appID string, ctrlID string) (domain.AppControl, error)
 }
 
 type Writer interface {

@@ -217,6 +217,29 @@ func saveControlsForApp(svc application.Service) http.HandlerFunc {
 	}
 }
 
+func showAppControlDetails(svc application.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		if !ok {
+			handleError(w, fmt.Errorf("missing application"))
+			return
+		}
+
+		ctrlID := chi.URLParam(r, "id")
+
+		ctrl, err := svc.FetchAppControlByID(r.Context(), app, ctrlID)
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+
+		if err := json.NewEncoder(w).Encode(ctrl); err != nil {
+			log.Printf("Encoding control for app: %v\n", err)
+			handleError(w, err)
+			return
+		}
+	}
+}
 func appToFilter(app *domain.Application) domain.ControlsFilter {
 	filter := domain.ControlsFilter{}
 
