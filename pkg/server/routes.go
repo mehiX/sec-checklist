@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strings"
@@ -50,7 +51,11 @@ func Handlers(svcApps application.Service, iFactsClient iFacts.Client) http.Hand
 				r.Get("/", controlsForApp(svcApps))
 				r.Post("/", saveControlsForApp(svcApps))
 				r.Get("/preview", previewControlsForApp(svcApps))
-				r.Get("/{id:[0-9.]+}/", showAppControlDetails(svcApps))
+				r.Route("/{id:[0-9.]+}", func(r chi.Router) {
+					r.Use(AppControlCtx(svcApps))
+					r.Get("/", showAppControlDetails(svcApps))
+					r.Post("/", saveAppControlDetails(svcApps))
+				})
 			})
 		})
 		r.Get("/iFacts/search", searchIFactsAppByName(iFactsClient))
@@ -85,6 +90,33 @@ func ApplicationCtx(svc application.Service) func(http.Handler) http.Handler {
 			ctx := context.WithValue(r.Context(), ApplicationCtxKey, app)
 			h.ServeHTTP(w, r.WithContext(ctx))
 
+		})
+	}
+}
+
+type appControlCtxKey struct{}
+
+var AppControlCtxKey = &appControlCtxKey{}
+
+func AppControlCtx(svc application.Service) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			app, ok := r.Context().Value(ApplicationCtxKey).(*domain.Application)
+			if !ok {
+				handleError(w, errors.New("missing application.not authorized"))
+				return
+			}
+
+			ctrlID := chi.URLParam(r, "id")
+			ctrl, err := svc.FetchAppControlByID(r.Context(), app, ctrlID)
+			if err != nil {
+				handleError(w, err)
+				return
+			}
+
+			ctx := context.WithValue(r.Context(), AppControlCtxKey, &ctrl)
+			h.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }

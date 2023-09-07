@@ -19,6 +19,7 @@ type ControlsService interface {
 
 	FetchAppControlByID(context.Context, *domain.Application, string) (domain.AppControl, error)
 	FetchControlsByApplication(context.Context, *domain.Application) ([]domain.AppControl, error)
+	SaveAppControl(context.Context, *domain.AppControl) error
 }
 
 func (s *service) FetchControlsFromExcel() ([]domain.Control, error) {
@@ -70,4 +71,12 @@ func (s *service) FetchAppControlByID(ctx context.Context, app *domain.Applicati
 	}
 
 	return s.dbRepo.ControlForApplicationByID(ctx, app.ID, id)
+}
+
+func (s *service) SaveAppControl(ctx context.Context, ctrl *domain.AppControl) error {
+	if s.dbRepo == nil {
+		return ErrNoDb
+	}
+
+	return s.dbRepo.SaveAppControl(ctx, ctrl)
 }

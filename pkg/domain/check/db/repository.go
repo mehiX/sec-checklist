@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -287,4 +288,25 @@ func (r *repository) SaveForApplication(ctx context.Context, app *domain.Applica
 	}
 
 	return tx.Commit()
+}
+
+func (r *repository) SaveAppControl(ctx context.Context, ctrl *domain.AppControl) error {
+
+	qry := `update APP_CONTROLS set notes = ?, is_done = ? where APP_ID = ? and CHECK_ID = ?`
+
+	res, err := r.db.ExecContext(ctx, qry, ctrl.Notes, ctrl.IsDone, ctrl.AppID, ctrl.ControlID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows <= 0 {
+		return errors.New("update not saved")
+	}
+
+	return nil
 }

@@ -18,6 +18,7 @@ type Reader interface {
 type Writer interface {
 	SaveAll(context.Context, []domain.Control) error
 	SaveForApplication(context.Context, *domain.Application, []domain.Control) error
+	SaveAppControl(context.Context, *domain.AppControl) error
 }
 
 type ReaderWriter interface {

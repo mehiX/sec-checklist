@@ -17,7 +17,7 @@
             </div>
             <div class="ui center aligned basic segment">
                 <div class="ui left floated button" id="btnCancel" tabindex="0">Cancel</div>
-                <div class="ui right floated primary button" tabindex="1">Save</div>
+                <div class="ui right floated primary button" id="btnSave" tabindex="1">Save</div>
             </div>
         </form>
 
@@ -36,52 +36,35 @@
                 $("#app_name").html(data.app_name);
                 $("#control_name").html(data.control_id + " - " + data.control_name);
                 $("#control_desc").html(data.description);
+                $("#notes").html(data.notes);
 
                 console.log(data);
             });
         }
 
-        function showControls() {
-            var controls = $.get({
-                url: '{{.ApiURL}}/apps/{{.SelectedAppID}}/controls', 
-                dataType: 'json'
+        function saveControl() {
+
+            var data = {
+                notes: $("#notes").val(),
+                is_done: true
+            };
+
+            var controls = $.post({
+                url: '{{.ApiURL}}/apps/{{.SelectedAppID}}/controls/{{.ControlID}}/', 
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify(data)
             });
             
             controls.done(function(data) {
-                $('#results').empty();
-
-                if (!data) {
-                    $('#results').append($("<div>", {class:"item", text:"(no controls found)"}));
-                    return false;
-                }
-
                 if (data.error) {
                     alert(data.error);
                     return false;
                 }
 
-                $.each(data, function(index, element) {
-                    content = $('<div>', {
-                        class: "content",
-                        text: element.ControlID + " - " + element.Name 
-                    });
-                    btn = $('<div>', {
-                        class: "ui button",
-                        text: "Validate"
-                    });
-                    rightContent = $('<div>', {
-                        class: "right floated content"
-                    });
-                    rightContent.append(btn);
-                    item = $('<div>', {
-                        class: "item"
-                    });
-                    item.append(rightContent);
-                    item.append(content);
-                    
-                    $('#results').append(item);
-                });
                 console.log(data);
+                window.location.href = '/apps/{{.SelectedAppID}}/';
+                return false;
             });
             }
 
@@ -92,7 +75,10 @@
                 return false;
             });
             showAppMetadata();
-            //showControls();
+            $("#btnSave").on("click", function(event) {
+                event.preventDefault();
+                return saveControl();
+            });
         });
         </script>
     </div>

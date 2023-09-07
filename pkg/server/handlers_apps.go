@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -239,6 +240,39 @@ func showAppControlDetails(svc application.Service) http.HandlerFunc {
 		}
 	}
 }
+
+func saveAppControlDetails(svc application.Service) http.HandlerFunc {
+	type data struct {
+		Notes  string `json:"notes"`
+		IsDone bool   `json:"is_done"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		ctrl, ok := r.Context().Value(AppControlCtxKey).(*domain.AppControl)
+		if !ok {
+			handleError(w, errors.New("not authorized"))
+			return
+		}
+
+		var d data
+		if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
+			handleError(w, err)
+			return
+		}
+
+		ctrl.Notes = d.Notes
+		ctrl.IsDone = true
+
+		if err := svc.SaveAppControl(r.Context(), ctrl); err != nil {
+			handleError(w, err)
+			return
+		}
+
+		_ = json.NewEncoder(w).Encode(ctrl)
+	}
+}
+
 func appToFilter(app *domain.Application) domain.ControlsFilter {
 	filter := domain.ControlsFilter{}
 

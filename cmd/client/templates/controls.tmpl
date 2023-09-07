@@ -55,6 +55,13 @@
                         text: "Validate",
                         "data-id": element.control_id
                     });
+                    if (element.is_done) {
+                        btn = $('<div>', {
+                            class: "ui green button",
+                            text: "Done",
+                            "data-id": element.control_id
+                        });
+                    }
                     rightContent = $('<div>', {
                         class: "right floated content"
                     });
