@@ -10,9 +10,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/mehix/sec-checklist/pkg/application"
 	"github.com/mehix/sec-checklist/pkg/domain"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
-	"github.com/mehix/sec-checklist/pkg/service/application"
 )
 
 func Handlers(svcApps application.Service, iFactsClient iFacts.Client) http.Handler {
@@ -50,7 +50,7 @@ func Handlers(svcApps application.Service, iFactsClient iFacts.Client) http.Hand
 				r.Get("/", controlsForApp(svcApps))
 				r.Post("/", saveControlsForApp(svcApps))
 				r.Get("/preview", previewControlsForApp(svcApps))
-				r.Get("/{id:[0-9.]+}", showAppControlDetails(svcApps))
+				r.Get("/{id:[0-9.]+}/", showAppControlDetails(svcApps))
 			})
 		})
 		r.Get("/iFacts/search", searchIFactsAppByName(iFactsClient))
@@ -62,10 +62,6 @@ func Handlers(svcApps application.Service, iFactsClient iFacts.Client) http.Hand
 		r.Post("/filter/", showFiltered(svcApps))
 		r.Get("/{id:[0-9.]+}", showOneControl(svcApps))
 	})
-
-	//r.Post("/ifacts/config", configIFactsClient(iFactsClient))
-	// forward a request to iFacts and return the result
-	//r.Method(http.MethodGet, "/ifacts/*", http.StripPrefix("/ifacts", http.HandlerFunc(forwardGetToIFacts(iFactsClient))))
 
 	r.Get("/docs/controls/filter", showFiltered(svcApps))
 

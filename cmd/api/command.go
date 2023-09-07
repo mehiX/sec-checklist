@@ -12,9 +12,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
+	"github.com/mehix/sec-checklist/pkg/application"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
 	"github.com/mehix/sec-checklist/pkg/server"
-	"github.com/mehix/sec-checklist/pkg/service/application"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
 )

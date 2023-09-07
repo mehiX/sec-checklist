@@ -215,16 +215,17 @@ func (r *repository) ControlsForApplication(ctx context.Context, appID string) (
 
 	var ctrls []domain.AppControl
 	for rows.Next() {
-		var appId, checkId, name, desc, notes string
+		var appId, appName, checkId, name, desc, notes string
 		var isDone bool
 
-		err := rows.Scan(&appId, &checkId, &name, &desc, &isDone, &notes)
+		err := rows.Scan(&appId, &appName, &checkId, &name, &desc, &isDone, &notes)
 		if err != nil {
 			log.Printf("Scanning for control from v_apps_controls: %v\n", err)
 			continue
 		}
 		ctrls = append(ctrls, domain.AppControl{
 			AppID:       appId,
+			AppName:     appName,
 			ControlID:   checkId,
 			Name:        name,
 			Description: desc,
@@ -242,16 +243,17 @@ func (r *repository) ControlForApplicationByID(ctx context.Context, appID, ctrlI
 
 	row := r.db.QueryRowContext(ctx, qry, appID, ctrlID)
 
-	var appId, checkId, name, desc, notes string
+	var appId, appName, checkId, name, desc, notes string
 	var isDone bool
 
-	err := row.Scan(&appId, &checkId, &name, &desc, &isDone, &notes)
+	err := row.Scan(&appId, &appName, &checkId, &name, &desc, &isDone, &notes)
 	if err != nil {
 		log.Printf("Scanning for one app control from v_apps_controls: %v\n", err)
 	}
 
 	ctrl := domain.AppControl{
 		AppID:       appId,
+		AppName:     appName,
 		ControlID:   checkId,
 		Name:        name,
 		Description: desc,

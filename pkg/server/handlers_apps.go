@@ -7,10 +7,9 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mehix/sec-checklist/pkg/application"
 	"github.com/mehix/sec-checklist/pkg/domain"
-	appDomain "github.com/mehix/sec-checklist/pkg/domain"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
-	"github.com/mehix/sec-checklist/pkg/service/application"
 )
 
 func listAllApps(svc application.Service) http.HandlerFunc {
@@ -34,7 +33,7 @@ func showAppByID(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
 
-		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		app, ok := r.Context().Value(ApplicationCtxKey).(*domain.Application)
 		if !ok {
 			handleError(w, fmt.Errorf("missing application"))
 			return
@@ -89,7 +88,7 @@ func saveApp(svc application.Service, iFactsCli iFacts.Client) http.HandlerFunc 
 
 		w.Header().Set("Content-type", "application/json")
 
-		var p appDomain.Application
+		var p domain.Application
 		if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
 			log.Printf("receiving new app data: %v\n", err)
 			handleError(w, err)
@@ -120,7 +119,7 @@ func updateApp(svc application.Service) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		app, ok := r.Context().Value(ApplicationCtxKey).(*domain.Application)
 		if !ok {
 			handleError(w, fmt.Errorf("missing application"))
 			return
@@ -128,7 +127,7 @@ func updateApp(svc application.Service) http.HandlerFunc {
 
 		w.Header().Set("Content-type", "application/json")
 
-		var p appDomain.Application
+		var p domain.Application
 		if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
 			handleError(w, err)
 			return
@@ -148,7 +147,7 @@ func updateApp(svc application.Service) http.HandlerFunc {
 func controlsForApp(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		app, ok := r.Context().Value(ApplicationCtxKey).(*domain.Application)
 		if !ok {
 			handleError(w, fmt.Errorf("missing application"))
 			return
@@ -171,7 +170,7 @@ func controlsForApp(svc application.Service) http.HandlerFunc {
 
 func previewControlsForApp(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		app, ok := r.Context().Value(ApplicationCtxKey).(*domain.Application)
 		if !ok {
 			handleError(w, fmt.Errorf("missing application"))
 			return
@@ -195,7 +194,7 @@ func previewControlsForApp(svc application.Service) http.HandlerFunc {
 func saveControlsForApp(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		app, ok := r.Context().Value(ApplicationCtxKey).(*domain.Application)
 		if !ok {
 			handleError(w, fmt.Errorf("missing application"))
 			return
@@ -219,7 +218,7 @@ func saveControlsForApp(svc application.Service) http.HandlerFunc {
 
 func showAppControlDetails(svc application.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		app, ok := r.Context().Value(ApplicationCtxKey).(*appDomain.Application)
+		app, ok := r.Context().Value(ApplicationCtxKey).(*domain.Application)
 		if !ok {
 			handleError(w, fmt.Errorf("missing application"))
 			return

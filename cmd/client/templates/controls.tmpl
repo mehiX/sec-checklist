@@ -48,12 +48,12 @@
                 $.each(data, function(index, element) {
                     content = $('<div>', {
                         class: "content",
-                        text: element.ControlID + " - " + element.Name 
+                        text: element.control_id + " - " + element.control_name
                     });
                     btn = $('<div>', {
                         class: "ui button validate",
                         text: "Validate",
-                        "data-id": element.ControlID
+                        "data-id": element.control_id
                     });
                     rightContent = $('<div>', {
                         class: "right floated content"

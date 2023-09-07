@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mehix/sec-checklist/pkg/application"
 	"github.com/mehix/sec-checklist/pkg/iFacts"
-	"github.com/mehix/sec-checklist/pkg/service/application"
 )
 
 func searchIFactsAppByName(ifc iFacts.Client) http.HandlerFunc {

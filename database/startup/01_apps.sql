@@ -86,6 +86,7 @@ CREATE VIEW V_APPS AS
 CREATE VIEW V_APPS_CONTROLS AS
     select
         a.ID as app_id,
+        a.name as app_name,
         c.ID as check_id,
         c.name,
         c.description,

@@ -104,12 +104,13 @@ type ControlsFilter struct {
 }
 
 type AppControl struct {
-	AppID       string
-	ControlID   string
-	Name        string
-	Description string
-	IsDone      bool
-	Notes       string
+	AppID       string `json:"app_id"`
+	AppName     string `json:"app_name"`
+	ControlID   string `json:"control_id"`
+	Name        string `json:"control_name"`
+	Description string `json:"description"`
+	IsDone      bool   `json:"is_done"`
+	Notes       string `json:"notes"`
 }
 
 type Classification struct {
