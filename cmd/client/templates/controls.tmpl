@@ -8,6 +8,45 @@
         <h2 class="ui header title">Show template for app {{ .SelectedAppID }}</h2>
         <div class="ui middle aligned divided list" id="results"></div>
 
+        <div class="ui accordion">
+            <div class="title">
+                <i class="dropdown icon"></i>
+                Applied filters
+            </div>
+            <div class="content">
+                <div class="ui middle aligned divided list" id="savedFilters">
+                    <div class="item">
+                        <div class="content">Only handled centrally</div>
+                        <div class="right floated content" id="only_handle_centrally"></div>
+                    </div>
+                    <div class="item">
+                        <div class="content">Owner</div>
+                        <div class="right floated content" id="handled_centrally_by"></div>
+                    </div>
+                    <div class="item">
+                        <div class="content">Exclude controls for only external supplier</div>
+                        <div class="right floated content" id="exclude_for_external_supplier"></div>
+                    </div>
+                    <div class="item">
+                        <div class="content">Software development relevant</div>
+                        <div class="right floated content" id="software_development_relevant"></div>
+                    </div>
+                    <div class="item">
+                        <div class="content">Cloud only</div>
+                        <div class="right floated content" id="cloud_only"></div>
+                    </div>
+                    <div class="item">
+                        <div class="content">Physical security only</div>
+                        <div class="right floated content" id="physical_security_only"></div>
+                    </div>
+                    <div class="item">
+                        <div class="content">Personal security only</div>
+                        <div class="right floated content" id="personal_security_only"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <script>
         function showAppMetadata() {
             var metadata = $.get({
@@ -21,6 +60,47 @@
                 }
 
                 $(".ui.header.title").html(data.app_name);
+                if (data.only_handle_centrally) {
+                    $("#only_handle_centrally").html("YES");
+                } else {
+                    $("#only_handle_centrally").html("NO");
+                }
+
+                if (data.handled_centrally_by) {
+                    $("#handled_centrally_by").html(data.handled_centrally_by);
+                } else {
+                    $("#handled_centrally_by").html("none");
+                }
+                
+                if (data.exclude_for_external_supplier) {
+                    $("#exclude_for_external_supplier").html("YES");
+                } else {
+                    $("#exclude_for_external_supplier").html("NO");
+                }
+
+                if (data.software_development_relevant) {
+                    $("#software_development_relevant").html("YES");
+                } else {
+                    $("#software_development_relevant").html("NO");
+                }
+
+                if (data.cloud_only) {
+                    $("#cloud_only").html("YES");
+                } else {
+                    $("#cloud_only").html("NO");
+                }
+
+                if (data.physical_security_only) {
+                    $("#physical_security_only").html("YES");
+                } else {
+                    $("#physical_security_only").html("NO");
+                }
+
+                if (data.personal_security_only) {
+                    $("#personal_security_only").html("YES");
+                } else {
+                    $("#personal_security_only").html("NO");
+                }
                 
                 console.log(data);
             });
@@ -88,6 +168,7 @@
             }
 
         $(window).on('load', function() {
+            $(".ui.accordion").accordion();
             showAppMetadata();
             showControls();
         });
